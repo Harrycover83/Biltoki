@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Biltoki",
+    "slug": "biltoki-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "biltoki",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.biltoki.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Biltoki utilise votre position pour trouver la halle la plus proche."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E8521A",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.biltoki.app",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "VIBRATE"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-font",
+      "expo-splash-screen",
+      ["expo-notifications", { "icon": "./assets/icon.png", "color": "#E8521A" }],
+      ["expo-location", { "locationWhenInUsePermission": "Biltoki utilise votre position pour trouver la halle la plus proche." }]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
