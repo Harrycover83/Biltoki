@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ProducersService {
-  create(payload: Record<string, unknown>) {
-    return { id: 'producer-scaffold-id', ...payload };
+  create(_payload: Record<string, unknown>) {
+    void _payload;
+    return { id: 'producer-scaffold-id', created: true };
   }
 
   findAll() {
@@ -14,8 +15,9 @@ export class ProducersService {
     return { id };
   }
 
-  update(id: string, payload: Record<string, unknown>) {
-    return { id, ...payload };
+  update(id: string, _payload: Record<string, unknown>) {
+    void _payload;
+    return { id, updated: true };
   }
 
   remove(id: string) {

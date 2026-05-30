@@ -4,9 +4,10 @@ import { Injectable } from '@nestjs/common';
 export class AdminService {
   createResource(
     type: 'halls' | 'events' | 'producers',
-    payload: Record<string, unknown>,
+    _payload: Record<string, unknown>,
   ) {
-    return { type, action: 'create', payload };
+    void _payload;
+    return { type, action: 'create' };
   }
 
   listResource(type: 'halls' | 'events' | 'producers') {
@@ -16,9 +17,10 @@ export class AdminService {
   updateResource(
     type: 'halls' | 'events' | 'producers',
     id: string,
-    payload: Record<string, unknown>,
+    _payload: Record<string, unknown>,
   ) {
-    return { type, id, action: 'update', payload };
+    void _payload;
+    return { type, id, action: 'update' };
   }
 
   deleteResource(type: 'halls' | 'events' | 'producers', id: string) {
