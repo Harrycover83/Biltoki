@@ -1,0 +1,1 @@
+export const EventsListScreen = () => null;
