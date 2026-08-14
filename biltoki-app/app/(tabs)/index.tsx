@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  heroImage: { width: '100%', height: 220, backgroundColor: Colors.card },
+  heroImage: { width: '100%', height: 190, backgroundColor: Colors.card },
   heroVisualCaption: { padding: 16 },
   heroVisualTitle: { fontSize: 16, fontWeight: '900', color: Colors.primary, textTransform: 'uppercase', letterSpacing: 1.1 },
   heroVisualText: { marginTop: 6, fontSize: 13, lineHeight: 19, color: Colors.textSecondary },
