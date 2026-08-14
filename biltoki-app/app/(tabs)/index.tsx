@@ -52,7 +52,7 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.heroVisual}>
-            <Image source={{ uri: HERO_IMAGE }} style={styles.heroImage} resizeMode="cover" />
+            <Image source={{ uri: HERO_IMAGE }} style={styles.heroImage} resizeMode="contain" />
             <View style={styles.heroVisualCaption}>
               <Text style={styles.heroVisualTitle}>Couleurs des halles</Text>
               <Text style={styles.heroVisualText}>Une ambiance vivante, populaire et généreuse.</Text>
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  heroImage: { width: '100%', height: 220 },
+  heroImage: { width: '100%', height: 220, backgroundColor: Colors.card },
   heroVisualCaption: { padding: 16 },
   heroVisualTitle: { fontSize: 16, fontWeight: '900', color: Colors.primary, textTransform: 'uppercase', letterSpacing: 1.1 },
   heroVisualText: { marginTop: 6, fontSize: 13, lineHeight: 19, color: Colors.textSecondary },
