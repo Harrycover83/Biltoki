@@ -1,16 +1,18 @@
 import React from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, SafeAreaView,
+  View, Text, StyleSheet, FlatList, TouchableOpacity, SafeAreaView, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { ARTICLES, Article } from '../../data/actualites';
 
+const NEWSLETTER_IMAGE = 'https://cdn.prod.website-files.com/69032f7aa92da3854968dc83/69e88a6b3f8f14683433c7d7_2025-12-BILTOKI-EmmaCORTIJO%20244-p-800.webp';
+
 const CATEGORY_COLORS: Record<string, string> = {
   Actualité: Colors.primary,
   Producteurs: Colors.secondary,
-  Recettes: '#F59E0B',
-  Événements: '#8B5CF6',
+  Recettes: Colors.orange,
+  Événements: Colors.rose,
 };
 
 export default function ActualitesScreen() {
@@ -21,18 +23,21 @@ export default function ActualitesScreen() {
     if (isFirst) {
       return (
         <View style={styles.featured}>
-          <View style={[styles.featuredBadge, { backgroundColor: color }]}>
-            <Text style={styles.badgeText}>{item.category}</Text>
-          </View>
-          <Text style={styles.featuredTitle}>{item.title}</Text>
-          <Text style={styles.featuredExcerpt}>{item.excerpt}</Text>
-          <View style={styles.metaRow}>
-            <Text style={styles.metaText}>
-              <Ionicons name="calendar-outline" size={12} /> {new Date(item.date).toLocaleDateString('fr-FR')}
-            </Text>
-            <Text style={styles.metaText}>
-              <Ionicons name="time-outline" size={12} /> {item.readTime}
-            </Text>
+          <Image source={{ uri: NEWSLETTER_IMAGE }} style={styles.featuredImage} />
+          <View style={styles.featuredBody}>
+            <View style={[styles.featuredBadge, { backgroundColor: color }]}>
+              <Text style={styles.badgeText}>{item.category}</Text>
+            </View>
+            <Text style={styles.featuredTitle}>{item.title}</Text>
+            <Text style={styles.featuredExcerpt}>{item.excerpt}</Text>
+            <View style={styles.metaRow}>
+              <Text style={styles.metaText}>
+                <Ionicons name="calendar-outline" size={12} /> {new Date(item.date).toLocaleDateString('fr-FR')}
+              </Text>
+              <Text style={styles.metaText}>
+                <Ionicons name="time-outline" size={12} /> {item.readTime}
+              </Text>
+            </View>
           </View>
         </View>
       );
@@ -67,6 +72,10 @@ export default function ActualitesScreen() {
         ListHeaderComponent={
           <View style={styles.header}>
             <Text style={styles.headerLabel}>NEWSLETTER BILTOKI</Text>
+            <Text style={styles.headerTitle}>Le journal de la place des bons vivants.</Text>
+            <Text style={styles.headerText}>
+              Plusieurs niveaux de lecture pour lire… ou picorer notre vision du monde.
+            </Text>
             <TouchableOpacity style={styles.subscribeBtn}>
               <Ionicons name="mail" size={16} color={Colors.white} />
               <Text style={styles.subscribeBtnText}>S'abonner à la newsletter</Text>
@@ -83,52 +92,54 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
   list: { padding: 16, paddingBottom: 32 },
   header: {
-    backgroundColor: Colors.primary,
-    borderRadius: 16,
+    backgroundColor: Colors.card,
+    borderRadius: 26,
     padding: 20,
     marginBottom: 20,
-    alignItems: 'center',
     gap: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   headerLabel: {
-    color: 'rgba(255,255,255,0.8)',
+    color: Colors.textSecondary,
     fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 2,
+    fontWeight: '900',
+    letterSpacing: 2.2,
+    textTransform: 'uppercase',
   },
+  headerTitle: { fontSize: 27, lineHeight: 32, fontWeight: '900', color: Colors.primary, textTransform: 'uppercase' },
+  headerText: { fontSize: 14, lineHeight: 21, color: Colors.textSecondary },
   subscribeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: Colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 30,
+    borderRadius: 999,
     gap: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.4)',
   },
   subscribeBtnText: { color: Colors.white, fontWeight: '700', fontSize: 14 },
   featured: {
     backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 24,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
+  featuredImage: { width: '100%', height: 190 },
+  featuredBody: { padding: 20 },
   featuredBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 20,
+    borderRadius: 999,
     marginBottom: 10,
   },
   featuredTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: Colors.text,
+    fontSize: 21,
+    fontWeight: '900',
+    color: Colors.primary,
     marginBottom: 8,
     lineHeight: 26,
   },
@@ -138,13 +149,11 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     backgroundColor: Colors.card,
-    borderRadius: 14,
+    borderRadius: 20,
     marginBottom: 10,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   cardAccent: { width: 5 },
   cardContent: { flex: 1, padding: 14 },
@@ -152,10 +161,10 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: 999,
     marginBottom: 6,
   },
-  badgeText: { fontSize: 10, fontWeight: '700', color: Colors.white },
-  cardTitle: { fontSize: 15, fontWeight: '700', color: Colors.text, marginBottom: 4 },
+  badgeText: { fontSize: 10, fontWeight: '900', color: Colors.white, letterSpacing: 1 },
+  cardTitle: { fontSize: 15, fontWeight: '900', color: Colors.primary, marginBottom: 4 },
   cardExcerpt: { fontSize: 13, color: Colors.textSecondary, lineHeight: 18, marginBottom: 8 },
 });

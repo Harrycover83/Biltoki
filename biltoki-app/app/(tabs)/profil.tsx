@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, SafeAreaView, Alert,
+  SafeAreaView, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
@@ -31,8 +31,14 @@ export default function ProfilScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Carte membre */}
         <View style={styles.memberCard}>
+          <View style={styles.memberTopLine}>
+            <Text style={styles.memberEyebrow}>COMMUNAUTÉ B!</Text>
+            <View style={styles.bLogo}>
+              <Text style={styles.bLogoText}>B!</Text>
+            </View>
+          </View>
+
           <View style={styles.memberCardTop}>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>
@@ -44,12 +50,8 @@ export default function ProfilScreen() {
               <Text style={styles.memberLevel}>Membre {MOCK_USER.level}</Text>
               <Text style={styles.memberSince}>Depuis {MOCK_USER.memberSince}</Text>
             </View>
-            <View style={styles.bLogo}>
-              <Text style={styles.bLogoText}>B!</Text>
-            </View>
           </View>
 
-          {/* Points & progression */}
           <View style={styles.pointsRow}>
             <View>
               <Text style={styles.pointsLabel}>Points B!</Text>
@@ -64,9 +66,8 @@ export default function ProfilScreen() {
           </View>
         </View>
 
-        {/* Récompenses */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mes Récompenses</Text>
+          <Text style={styles.sectionTitle}>Mes récompenses</Text>
           <View style={styles.rewardsGrid}>
             {REWARDS.map((r) => {
               const unlocked = MOCK_USER.points >= r.points;
@@ -95,9 +96,8 @@ export default function ProfilScreen() {
           </View>
         </View>
 
-        {/* Halles favorites */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mes Halles</Text>
+          <Text style={styles.sectionTitle}>Mes halles</Text>
           {MOCK_USER.hallesFavorites.map((h) => (
             <View key={h} style={styles.halleRow}>
               <Ionicons name="heart" size={16} color={Colors.primary} />
@@ -106,7 +106,6 @@ export default function ProfilScreen() {
           ))}
         </View>
 
-        {/* Paramètres */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Paramètres</Text>
 
@@ -137,7 +136,6 @@ export default function ProfilScreen() {
           </View>
         </View>
 
-        {/* Déconnexion */}
         <TouchableOpacity
           style={styles.logoutBtn}
           onPress={() => Alert.alert('Déconnexion', 'Vous avez été déconnecté.')}
@@ -154,102 +152,100 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
   scroll: { padding: 16, paddingBottom: 40 },
   memberCard: {
-    backgroundColor: Colors.navy,
-    borderRadius: 16,
+    backgroundColor: Colors.card,
+    borderRadius: 26,
     padding: 20,
     marginBottom: 24,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
+  memberTopLine: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
+  memberEyebrow: { fontSize: 11, fontWeight: '900', color: Colors.textSecondary, letterSpacing: 2.2, textTransform: 'uppercase' },
   memberCardTop: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 18 },
   avatar: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: { color: Colors.white, fontWeight: '800', fontSize: 20 },
-  memberName: { color: Colors.white, fontSize: 17, fontWeight: '800' },
-  memberLevel: { color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: '600', marginTop: 2 },
-  memberSince: { color: 'rgba(255,255,255,0.65)', fontSize: 11, marginTop: 1 },
+  memberName: { color: Colors.primary, fontSize: 17, fontWeight: '900', textTransform: 'uppercase' },
+  memberLevel: { color: Colors.secondary, fontSize: 13, fontWeight: '800', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.6 },
+  memberSince: { color: Colors.textSecondary, fontSize: 11, marginTop: 2 },
   bLogo: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: Colors.rose,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.4)',
   },
   bLogoText: { color: Colors.white, fontWeight: '900', fontSize: 18 },
   pointsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 10 },
-  pointsLabel: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '600' },
-  pointsValue: { color: Colors.white, fontSize: 26, fontWeight: '800' },
+  pointsLabel: { color: Colors.textSecondary, fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.1 },
+  pointsValue: { color: Colors.primary, fontSize: 28, fontWeight: '900' },
   nextLevel: {},
-  nextLevelText: { color: 'rgba(255,255,255,0.7)', fontSize: 12 },
+  nextLevelText: { color: Colors.textSecondary, fontSize: 12, fontWeight: '700' },
   progressBar: {
     height: 8,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    borderRadius: 4,
+    backgroundColor: Colors.lightGray,
+    borderRadius: 999,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: Colors.white,
-    borderRadius: 4,
+    backgroundColor: Colors.primary,
+    borderRadius: 999,
   },
   section: { marginBottom: 24 },
-  sectionTitle: { fontSize: 17, fontWeight: '800', color: Colors.navy, marginBottom: 14, letterSpacing: 0.3 },
+  sectionTitle: { fontSize: 22, fontWeight: '900', color: Colors.primary, marginBottom: 14, letterSpacing: 0.8, textTransform: 'uppercase' },
   rewardsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   rewardCard: {
     width: '47%',
     backgroundColor: Colors.card,
-    borderRadius: 12,
+    borderRadius: 20,
     padding: 14,
     alignItems: 'center',
     gap: 8,
     borderWidth: 1,
     borderColor: Colors.border,
-    shadowColor: Colors.darkBrown,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
   },
   rewardCardLocked: { opacity: 0.45 },
-  rewardTitle: { fontSize: 12, fontWeight: '800', color: Colors.navy, textAlign: 'center' },
+  rewardTitle: { fontSize: 12, fontWeight: '900', color: Colors.primary, textAlign: 'center', textTransform: 'uppercase' },
   rewardTitleLocked: { color: Colors.textSecondary },
-  rewardPoints: { fontSize: 11, fontWeight: '700', color: Colors.primary },
+  rewardPoints: { fontSize: 11, fontWeight: '900', color: Colors.secondary },
   rewardPointsLocked: { color: Colors.textSecondary },
   halleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     backgroundColor: Colors.card,
-    borderRadius: 10,
+    borderRadius: 16,
     padding: 12,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  halleRowText: { fontSize: 14, fontWeight: '700', color: Colors.navy },
+  halleRowText: { fontSize: 14, fontWeight: '800', color: Colors.primary },
   settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: Colors.card,
-    borderRadius: 10,
+    borderRadius: 16,
     padding: 14,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: Colors.border,
   },
   settingLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  settingLabel: { fontSize: 15, fontWeight: '600', color: Colors.text },
+  settingLabel: { fontSize: 15, fontWeight: '700', color: Colors.text },
   toggle: {
     width: 48,
     height: 28,
-    borderRadius: 14,
+    borderRadius: 999,
     backgroundColor: Colors.border,
     padding: 2,
     justifyContent: 'center',
@@ -269,7 +265,7 @@ const styles = StyleSheet.create({
     gap: 8,
     borderWidth: 1.5,
     borderColor: Colors.primary,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 14,
     marginTop: 8,
   },

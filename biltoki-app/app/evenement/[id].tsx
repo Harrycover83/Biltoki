@@ -9,11 +9,11 @@ import { Colors } from '../../constants/Colors';
 import { EVENEMENTS } from '../../data/evenements';
 
 const CATEGORY_COLORS: Record<string, string> = {
-  concert: '#8B5CF6',
-  tapas: '#EF4444',
-  banquet: '#F59E0B',
-  atelier: '#10B981',
-  marché: '#3B82F6',
+  concert: Colors.blue,
+  tapas: Colors.rose,
+  banquet: Colors.orange,
+  atelier: Colors.secondary,
+  marché: Colors.accent,
 };
 
 const CATEGORY_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -66,7 +66,6 @@ export default function EvenementDetail() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView>
-        {/* Banner coloré */}
         <View style={[styles.banner, { backgroundColor: color }]}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={22} color={Colors.white} />
@@ -81,7 +80,6 @@ export default function EvenementDetail() {
         </View>
 
         <View style={styles.body}>
-          {/* Fiche date/lieu */}
           <View style={styles.infoCard}>
             <View style={styles.infoRow}>
               <Ionicons name="calendar" size={18} color={color} />
@@ -108,13 +106,11 @@ export default function EvenementDetail() {
             </View>
           </View>
 
-          {/* Description */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>À propos</Text>
             <Text style={styles.description}>{event.description}</Text>
           </View>
 
-          {/* Points B! */}
           <View style={[styles.pointsCard, { borderColor: color + '40' }]}>
             <Ionicons name="star" size={22} color={color} />
             <View style={{ flex: 1 }}>
@@ -123,7 +119,6 @@ export default function EvenementDetail() {
             </View>
           </View>
 
-          {/* CTA Inscription */}
           <TouchableOpacity
             style={[styles.ctaBtn, inscrit && styles.ctaBtnActive, { backgroundColor: inscrit ? Colors.secondary : color }]}
             onPress={handleInscription}
@@ -138,7 +133,6 @@ export default function EvenementDetail() {
             </Text>
           </TouchableOpacity>
 
-          {/* Voir la halle */}
           <TouchableOpacity
             style={styles.halleLink}
             onPress={() => router.push(`/halle/${event.halleId}` as any)}
@@ -159,7 +153,7 @@ const styles = StyleSheet.create({
   banner: { paddingTop: 50, paddingBottom: 40, paddingHorizontal: 20 },
   backBtn: {
     backgroundColor: 'rgba(0,0,0,0.2)',
-    borderRadius: 20,
+    borderRadius: 999,
     padding: 8,
     alignSelf: 'flex-start',
     marginBottom: 20,
@@ -176,53 +170,50 @@ const styles = StyleSheet.create({
   bannerCategory: {
     color: 'rgba(255,255,255,0.8)',
     fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 2,
+    fontWeight: '900',
+    letterSpacing: 2.2,
+    textTransform: 'uppercase',
   },
   bannerTitle: {
     color: Colors.white,
-    fontSize: 26,
-    fontWeight: '800',
+    fontSize: 28,
+    fontWeight: '900',
     textAlign: 'center',
     lineHeight: 32,
   },
   body: { padding: 20 },
   infoCard: {
     backgroundColor: Colors.card,
-    borderRadius: 12,
+    borderRadius: 20,
     padding: 16,
     marginBottom: 24,
     borderWidth: 1,
     borderColor: Colors.border,
-    shadowColor: Colors.darkBrown,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
   },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
-  infoLabel: { fontSize: 12, color: Colors.textSecondary, width: 52, fontWeight: '700', letterSpacing: 0.5 },
-  infoValue: { flex: 1, fontSize: 13, fontWeight: '800', color: Colors.navy },
+  infoLabel: { fontSize: 12, color: Colors.textSecondary, width: 52, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase' },
+  infoValue: { flex: 1, fontSize: 13, fontWeight: '800', color: Colors.primary },
   divider: { height: 1, backgroundColor: Colors.border },
   section: { marginBottom: 24 },
-  sectionTitle: { fontSize: 16, fontWeight: '800', color: Colors.navy, marginBottom: 8, letterSpacing: 0.3 },
+  sectionTitle: { fontSize: 20, fontWeight: '900', color: Colors.primary, marginBottom: 8, letterSpacing: 0.8, textTransform: 'uppercase' },
   description: { fontSize: 14, color: Colors.textSecondary, lineHeight: 22 },
   pointsCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
     backgroundColor: Colors.card,
-    borderRadius: 12,
+    borderRadius: 20,
     padding: 16,
     borderWidth: 1.5,
     marginBottom: 20,
   },
-  pointsTitle: { fontSize: 14, fontWeight: '800', color: Colors.navy },
+  pointsTitle: { fontSize: 14, fontWeight: '900', color: Colors.primary },
   pointsSub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
   ctaBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 14,
+    borderRadius: 16,
     paddingVertical: 16,
     gap: 10,
     marginBottom: 14,
@@ -236,5 +227,5 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 12,
   },
-  halleLinkText: { fontSize: 14, color: Colors.primary, fontWeight: '600' },
+  halleLinkText: { fontSize: 14, color: Colors.primary, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.6 },
 });

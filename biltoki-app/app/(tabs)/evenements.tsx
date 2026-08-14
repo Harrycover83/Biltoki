@@ -18,11 +18,11 @@ const CATEGORY_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  concert: '#8B5CF6',
-  tapas: '#EF4444',
-  banquet: '#F59E0B',
-  atelier: '#10B981',
-  marché: '#3B82F6',
+  concert: Colors.blue,
+  tapas: Colors.rose,
+  banquet: Colors.orange,
+  atelier: Colors.secondary,
+  marché: Colors.accent,
 };
 
 export default function EvenementsScreen() {
@@ -79,6 +79,11 @@ export default function EvenementsScreen() {
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <View style={styles.filterWrapper}>
+            <Text style={styles.headerTag}>PROGRAMME</Text>
+            <Text style={styles.headerTitle}>Des rendez-vous toute l’année.</Text>
+            <Text style={styles.headerText}>
+              Concerts, banquets, ateliers et soirées tapas dans les halles Biltoki.
+            </Text>
             <FlatList
               data={CATEGORIES}
               horizontal
@@ -91,7 +96,7 @@ export default function EvenementsScreen() {
                   onPress={() => setActiveCategory(item)}
                 >
                   <Text style={[styles.filterText, activeCategory === item && styles.filterTextActive]}>
-                    {item.charAt(0).toUpperCase() + item.slice(1)}
+                    {item === 'Tous' ? item : item.charAt(0).toUpperCase() + item.slice(1)}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -112,21 +117,24 @@ export default function EvenementsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
-  filterWrapper: { backgroundColor: Colors.background },
-  filterList: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
+  filterWrapper: { backgroundColor: Colors.background, paddingHorizontal: 16, paddingTop: 8 },
+  headerTag: { fontSize: 11, fontWeight: '900', color: Colors.textSecondary, letterSpacing: 2.2, textTransform: 'uppercase' },
+  headerTitle: { marginTop: 10, fontSize: 28, lineHeight: 32, fontWeight: '900', color: Colors.primary, textTransform: 'uppercase' },
+  headerText: { marginTop: 10, fontSize: 14, lineHeight: 21, color: Colors.textSecondary },
+  filterList: { paddingVertical: 14, gap: 8 },
   filterChip: {
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 6,
+    borderRadius: 999,
     backgroundColor: Colors.card,
     borderWidth: 1.5,
     borderColor: Colors.border,
   },
   filterChipActive: {
-    backgroundColor: Colors.navy,
-    borderColor: Colors.navy,
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
-  filterText: { fontSize: 12, fontWeight: '700', color: Colors.textSecondary, letterSpacing: 0.5 },
+  filterText: { fontSize: 12, fontWeight: '800', color: Colors.textSecondary, letterSpacing: 0.6, textTransform: 'uppercase' },
   filterTextActive: { color: Colors.white },
   list: { paddingHorizontal: 16, paddingBottom: 24 },
   empty: { alignItems: 'center', marginTop: 60, gap: 12 },
@@ -134,15 +142,11 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     backgroundColor: Colors.card,
-    borderRadius: 12,
+    borderRadius: 22,
     marginBottom: 10,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: Colors.border,
-    shadowColor: Colors.darkBrown,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
   },
   dateStripe: {
     width: 60,
@@ -150,12 +154,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
   },
-  dateDay: { color: Colors.white, fontSize: 22, fontWeight: '800' },
-  dateMonth: { color: 'rgba(255,255,255,0.85)', fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
+  dateDay: { color: Colors.white, fontSize: 22, fontWeight: '900' },
+  dateMonth: { color: 'rgba(255,255,255,0.85)', fontSize: 10, fontWeight: '800', letterSpacing: 0.8 },
   cardContent: { flex: 1, padding: 14 },
   categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 },
-  categoryLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, textTransform: 'uppercase' },
-  cardTitle: { fontSize: 15, fontWeight: '800', color: Colors.navy, marginBottom: 4 },
+  categoryLabel: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5, textTransform: 'uppercase' },
+  cardTitle: { fontSize: 15, fontWeight: '900', color: Colors.primary, marginBottom: 4 },
   cardExcerpt: { fontSize: 12, color: Colors.textSecondary, marginBottom: 6, lineHeight: 17 },
   cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
   cardMetaText: { fontSize: 11, color: Colors.textSecondary },

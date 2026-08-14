@@ -12,27 +12,28 @@ export default function TabLayout() {
           backgroundColor: Colors.card,
           borderTopColor: Colors.border,
           borderTopWidth: 1,
-          height: 64,
+          height: 72,
           paddingBottom: 10,
-          paddingTop: 4,
+          paddingTop: 8,
         },
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: '700',
-          letterSpacing: 0.5,
+          fontWeight: '800',
+          letterSpacing: 1,
           textTransform: 'uppercase',
         },
-        headerStyle: { backgroundColor: Colors.navy },
-        headerTintColor: Colors.cream,
-        headerTitleStyle: { fontWeight: '800', fontSize: 17, letterSpacing: 1 },
+        headerStyle: { backgroundColor: Colors.background },
+        headerTintColor: Colors.primary,
+        headerTitleStyle: { fontWeight: '900', fontSize: 16, letterSpacing: 1.8, textTransform: 'uppercase' },
         headerShadowVisible: false,
+        headerBackTitleVisible: false,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Accueil',
-          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
           headerTitle: 'Biltoki',
         }}
       />
@@ -40,7 +41,7 @@ export default function TabLayout() {
         name="halles"
         options={{
           title: 'Nos Halles',
-          tabBarIcon: ({ color, size }) => <Ionicons name="storefront" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="storefront-outline" size={size} color={color} />,
           headerTitle: 'Nos Halles',
         }}
       />
@@ -48,7 +49,7 @@ export default function TabLayout() {
         name="evenements"
         options={{
           title: 'Événements',
-          tabBarIcon: ({ color, size }) => <Ionicons name="calendar" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" size={size} color={color} />,
           headerTitle: 'Programme',
         }}
       />
@@ -56,7 +57,7 @@ export default function TabLayout() {
         name="actualites"
         options={{
           title: 'Actualités',
-          tabBarIcon: ({ color, size }) => <Ionicons name="newspaper" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="newspaper-outline" size={size} color={color} />,
           headerTitle: 'Actualités',
         }}
       />
@@ -64,7 +65,7 @@ export default function TabLayout() {
         name="profil"
         options={{
           title: 'Mon B!',
-          tabBarIcon: ({ color, size }) => <Ionicons name="person-circle" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
           headerTitle: 'Mon Compte B!',
         }}
       />

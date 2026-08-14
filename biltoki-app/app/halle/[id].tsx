@@ -32,17 +32,20 @@ export default function HalleDetail() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView>
-        <Image source={{ uri: halle.image }} style={styles.image} />
-
-        {/* Overlay header */}
-        <View style={styles.headerOverlay}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={22} color={Colors.white} />
-          </TouchableOpacity>
+        <View style={styles.hero}>
+          <Image source={{ uri: halle.image }} style={styles.image} />
+          <View style={styles.imageOverlay} />
+          <View style={styles.headerOverlay}>
+            <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+              <Ionicons name="arrow-back" size={22} color={Colors.white} />
+            </TouchableOpacity>
+            <View style={styles.heroBadge}>
+              <Text style={styles.heroBadgeText}>NOS HALLES</Text>
+            </View>
+          </View>
         </View>
 
         <View style={styles.body}>
-          {/* Infos principales */}
           <View style={styles.titleRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.name}>{halle.name}</Text>
@@ -58,7 +61,6 @@ export default function HalleDetail() {
 
           <Text style={styles.description}>{halle.description}</Text>
 
-          {/* Actions */}
           <View style={styles.actions}>
             <TouchableOpacity style={styles.actionBtn} onPress={callHalle}>
               <Ionicons name="call" size={20} color={Colors.white} />
@@ -70,13 +72,11 @@ export default function HalleDetail() {
             </TouchableOpacity>
           </View>
 
-          {/* Adresse */}
           <View style={styles.infoBlock}>
             <Ionicons name="map-outline" size={18} color={Colors.primary} />
             <Text style={styles.infoText}>{halle.address}</Text>
           </View>
 
-          {/* Stands */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Les stands</Text>
             <View style={styles.standGrid}>
@@ -89,7 +89,6 @@ export default function HalleDetail() {
             </View>
           </View>
 
-          {/* Événements de cette halle */}
           {halleEvents.length > 0 && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Événements à venir</Text>
@@ -123,26 +122,30 @@ export default function HalleDetail() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
   notFound: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  image: { width: '100%', height: 240 },
-  headerOverlay: { position: 'absolute', top: 50, left: 16 },
+  hero: { position: 'relative' },
+  image: { width: '100%', height: 260 },
+  imageOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.18)' },
+  headerOverlay: { position: 'absolute', top: 18, left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   backBtn: {
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    borderRadius: 20,
+    backgroundColor: 'rgba(17,17,17,0.55)',
+    borderRadius: 999,
     padding: 8,
   },
+  heroBadge: { backgroundColor: Colors.rose, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999 },
+  heroBadgeText: { color: Colors.white, fontSize: 10, fontWeight: '900', letterSpacing: 1.8, textTransform: 'uppercase' },
   body: { padding: 20 },
   titleRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12, gap: 12 },
-  name: { fontSize: 22, fontWeight: '800', color: Colors.navy },
-  city: { fontSize: 13, color: Colors.primary, fontWeight: '700', marginTop: 4, letterSpacing: 0.3 },
+  name: { fontSize: 26, fontWeight: '900', color: Colors.primary, textTransform: 'uppercase', lineHeight: 30 },
+  city: { fontSize: 13, color: Colors.rose, fontWeight: '800', marginTop: 6, letterSpacing: 0.8, textTransform: 'uppercase' },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 6,
+    borderRadius: 999,
     gap: 4,
   },
-  pillText: { fontSize: 11, fontWeight: '700' },
+  pillText: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.8 },
   description: { fontSize: 14, color: Colors.textSecondary, lineHeight: 21, marginBottom: 20 },
   actions: { flexDirection: 'row', gap: 12, marginBottom: 20 },
   actionBtn: {
@@ -151,7 +154,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: Colors.primary,
-    borderRadius: 10,
+    borderRadius: 16,
     paddingVertical: 13,
     gap: 8,
   },
@@ -166,33 +169,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     backgroundColor: Colors.lightGray,
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 12,
     marginBottom: 20,
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  infoText: { fontSize: 13, color: Colors.text, flex: 1 },
+  infoText: { fontSize: 13, color: Colors.text, flex: 1, fontWeight: '700' },
   section: { marginBottom: 24 },
-  sectionTitle: { fontSize: 16, fontWeight: '800', color: Colors.navy, marginBottom: 12, letterSpacing: 0.3 },
+  sectionTitle: { fontSize: 20, fontWeight: '900', color: Colors.primary, marginBottom: 12, letterSpacing: 0.8, textTransform: 'uppercase' },
   standGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   standChip: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.card,
-    borderRadius: 6,
+    borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 6,
     gap: 6,
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  standText: { fontSize: 12, fontWeight: '700', color: Colors.navy },
+  standText: { fontSize: 12, fontWeight: '800', color: Colors.primary },
   eventRow: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.card,
-    borderRadius: 10,
+    borderRadius: 18,
     padding: 12,
     marginBottom: 8,
     gap: 12,
@@ -201,14 +204,14 @@ const styles = StyleSheet.create({
   },
   eventDateBox: {
     backgroundColor: Colors.primary,
-    borderRadius: 8,
+    borderRadius: 14,
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  eventDay: { color: Colors.white, fontSize: 16, fontWeight: '800' },
-  eventMonth: { color: 'rgba(255,255,255,0.8)', fontSize: 9, fontWeight: '600' },
-  eventTitle: { fontSize: 14, fontWeight: '700', color: Colors.text },
+  eventDay: { color: Colors.white, fontSize: 16, fontWeight: '900' },
+  eventMonth: { color: 'rgba(255,255,255,0.8)', fontSize: 9, fontWeight: '800' },
+  eventTitle: { fontSize: 14, fontWeight: '800', color: Colors.text },
   eventTime: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
 });

@@ -1,21 +1,23 @@
-// Charte graphique Biltoki — Bleu jean (chemises du personnel) + fond crème Instagram
 export const Colors = {
-  primary: '#3A6B9E',    // bleu jean Biltoki (chemises)
-  primaryDark: '#2A4F7A', // bleu jean foncé (headers, CTA)
-  primaryLight: '#5A8BB8', // bleu jean clair
-  secondary: '#2C5F3F',  // vert basque
-  rose: '#E8607A',       // rose tricolore
-  orange: '#D94F1E',     // orange accent
-  accent: '#F2A65A',     // dorée / orange clair
-  background: '#F4EFE4', // crème chaud (fond Instagram)
-  card: '#FDFAF4',       // crème très clair pour les cartes
-  text: '#1A2C3D',       // quasi-noir bleuté
-  textSecondary: '#607081',
-  border: '#D4DCE8',     // bordure bleutée
-  success: '#2C5F3F',
+  background: '#F4ECDD',
+  card: '#FFF9F1',
+  paper: '#FFFDF9',
+  surface: '#F9E7D4',
+  primary: '#111111',
+  primaryDark: '#000000',
+  primaryLight: '#F1E1D1',
+  secondary: '#2E6B4F',
+  rose: '#E75E7B',
+  orange: '#F08A2B',
+  accent: '#DFA83D',
+  blue: '#2F6E9A',
+  success: '#2E6B4F',
+  text: '#171412',
+  textSecondary: '#6F655B',
+  border: '#E6D8C6',
   white: '#FFFFFF',
-  lightGray: '#E8EEF4',  // gris bleuté clair (chips, tags)
-  cream: '#F4EFE4',
-  navy: '#1A2E4A',       // bleu marine profond (hero, header)
-  darkBrown: '#1A2E4A',  // alias navy pour compatibilité
+  lightGray: '#EFE3D3',
+  cream: '#F4ECDD',
+  navy: '#111111',
+  darkBrown: '#111111',
 };
