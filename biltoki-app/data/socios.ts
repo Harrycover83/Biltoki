@@ -11,6 +11,15 @@ export interface SociosReferrer {
   referents: string;
 }
 
+export interface SociosDigitalCard {
+  id: string;
+  holderName: string;
+  phoneMasked: string;
+  walletReady: boolean;
+  nfcReady: boolean;
+  nfcLabel: string;
+}
+
 export const SOCIOS_RULES = {
   programName: 'SOCIOS!',
   conversionLabel: '1 euro depense au bar = 1 point',
@@ -68,3 +77,12 @@ export const SOCIOS_ONBOARDING_STEPS = [
   'Cumulez automatiquement vos points apres chaque achat.',
   'Debloquez vos avantages au fil de vos passages.',
 ];
+
+export const SOCIOS_CARD_MOCK: SociosDigitalCard = {
+  id: 'SOC-5C-A1-9984',
+  holderName: 'MARIE DUPONT',
+  phoneMasked: '06 45 22 ** **',
+  walletReady: false,
+  nfcReady: false,
+  nfcLabel: 'Activation NFC en preparation',
+};

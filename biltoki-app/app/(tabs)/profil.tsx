@@ -6,6 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import {
+  SOCIOS_CARD_MOCK,
   SOCIOS_ONBOARDING_STEPS,
   SOCIOS_REFERENTS,
   SOCIOS_REWARDS,
@@ -46,6 +47,20 @@ export default function ProfilScreen() {
 
     setIsJoined(true);
     Alert.alert('Bienvenue dans SOCIOS!', 'Votre numero est enregistre. Vos prochains passages au bar cumuleront des points.');
+  };
+
+  const handleAddToWallet = () => {
+    Alert.alert(
+      'Bientot disponible',
+      'La carte Wallet sera activee avec la liaison iOS/Android Wallet et la signature des passes.'
+    );
+  };
+
+  const handleNfcTap = () => {
+    Alert.alert(
+      'NFC en preparation',
+      'Le mode sans contact sera active apres integration native NFC et configuration des caisses.'
+    );
   };
 
   return (
@@ -114,6 +129,53 @@ export default function ProfilScreen() {
           <Text style={styles.eurosValue}>{MOCK_USER.eurosSpentAtBar} euros cumules au bar</Text>
           <View style={styles.progressBar}>
             <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Carte Socios</Text>
+
+          <View style={styles.walletCard}>
+            <View style={styles.walletGlowLeft} />
+            <View style={styles.walletGlowRight} />
+
+            <View style={styles.walletTopRow}>
+              <Text style={styles.walletBrand}>SOCIOS</Text>
+              <View style={styles.walletNfcBadge}>
+                <Ionicons name="wifi-outline" size={12} color={Colors.white} />
+                <Text style={styles.walletNfcBadgeText}>NFC</Text>
+              </View>
+            </View>
+
+            <Text style={styles.walletId}>{SOCIOS_CARD_MOCK.id}</Text>
+
+            <View style={styles.walletBottomRow}>
+              <View>
+                <Text style={styles.walletLabel}>Titulaire</Text>
+                <Text style={styles.walletValue}>{SOCIOS_CARD_MOCK.holderName}</Text>
+              </View>
+              <View>
+                <Text style={styles.walletLabel}>Numero</Text>
+                <Text style={styles.walletValue}>{SOCIOS_CARD_MOCK.phoneMasked}</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.walletActionsRow}>
+            <TouchableOpacity style={styles.walletPrimaryAction} onPress={handleAddToWallet}>
+              <Ionicons name="wallet-outline" size={16} color={Colors.white} />
+              <Text style={styles.walletPrimaryActionText}>Ajouter a Wallet</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.walletSecondaryAction} onPress={handleNfcTap}>
+              <Ionicons name="phone-portrait-outline" size={16} color={Colors.primary} />
+              <Text style={styles.walletSecondaryActionText}>Scanner NFC</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.walletInfoRow}>
+            <Ionicons name="information-circle-outline" size={15} color={Colors.textSecondary} />
+            <Text style={styles.walletInfoText}>{SOCIOS_CARD_MOCK.nfcLabel}</Text>
           </View>
         </View>
 
@@ -306,6 +368,77 @@ const styles = StyleSheet.create({
   },
   section: { marginBottom: 24 },
   sectionTitle: { fontSize: 22, fontWeight: '900', color: Colors.primary, marginBottom: 14, letterSpacing: 0.8, textTransform: 'uppercase' },
+  walletCard: {
+    backgroundColor: Colors.primary,
+    borderRadius: 24,
+    padding: 18,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#2E2E2E',
+  },
+  walletGlowLeft: {
+    position: 'absolute',
+    top: -18,
+    left: -18,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#2E6B4F',
+    opacity: 0.35,
+  },
+  walletGlowRight: {
+    position: 'absolute',
+    bottom: -26,
+    right: -12,
+    width: 115,
+    height: 115,
+    borderRadius: 58,
+    backgroundColor: '#E75E7B',
+    opacity: 0.28,
+  },
+  walletTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  walletBrand: { color: Colors.white, fontSize: 12, fontWeight: '900', letterSpacing: 2.2, textTransform: 'uppercase' },
+  walletNfcBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  walletNfcBadgeText: { color: Colors.white, fontSize: 10, fontWeight: '900', letterSpacing: 1.1 },
+  walletId: { color: Colors.white, fontSize: 24, fontWeight: '900', marginTop: 18, letterSpacing: 1.2 },
+  walletBottomRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
+  walletLabel: { color: 'rgba(255,255,255,0.74)', fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.3 },
+  walletValue: { color: Colors.white, fontSize: 12, fontWeight: '900', marginTop: 4, letterSpacing: 0.8 },
+  walletActionsRow: { flexDirection: 'row', gap: 10, marginTop: 12 },
+  walletPrimaryAction: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  walletPrimaryActionText: { color: Colors.white, fontSize: 11, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase' },
+  walletSecondaryAction: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+    backgroundColor: Colors.card,
+  },
+  walletSecondaryActionText: { color: Colors.primary, fontSize: 11, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase' },
+  walletInfoRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 },
+  walletInfoText: { color: Colors.textSecondary, fontSize: 12, fontWeight: '700' },
   stepsCard: {
     backgroundColor: Colors.card,
     borderRadius: 20,
