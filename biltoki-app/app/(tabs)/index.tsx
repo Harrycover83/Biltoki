@@ -8,8 +8,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { EVENEMENTS } from '../../data/evenements';
 import { HALLES } from '../../data/halles';
-import { ARTICLES } from '../../data/actualites';
-import { SOCIOS_REWARDS } from '../../data/socios';
 
 const CATEGORY_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   concert: 'musical-notes',
@@ -26,11 +24,6 @@ export default function HomeScreen() {
   const router = useRouter();
   const upcomingEvents = EVENEMENTS.slice(0, 3);
   const featuredHalles = HALLES.slice(0, 3);
-  const homePoints = 340;
-  const nextReward = SOCIOS_REWARDS.find((reward) => reward.points > homePoints);
-  const highlightedEvent = upcomingEvents[0] ?? EVENEMENTS[0];
-  const spotlightArticle = ARTICLES[0];
-  const favoriteHalle = featuredHalles[0] ?? HALLES[0];
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -43,45 +36,24 @@ export default function HomeScreen() {
           </Text>
 
           <View style={styles.heroChips}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>POUR VOUS</Text>
-              <TouchableOpacity onPress={() => router.push('/profil')}>
-                <Text style={styles.sectionLink}>Mon espace Socios</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.insightGrid}>
-              <View style={styles.sociosCard}>
-                <View style={styles.sociosTopRow}>
-                  <Text style={styles.sociosEyebrow}>SOCIOS</Text>
-                  <Ionicons name="flame" size={18} color={Colors.orange} />
-                </View>
-                <Text style={styles.sociosPoints}>{homePoints} pts</Text>
-                <Text style={styles.sociosHint}>
-                  {nextReward
-                    ? `Prochain avantage: ${nextReward.title} a ${nextReward.points} pts.`
-                    : 'Tous les avantages SOCIOS sont debloques.'}
-                </Text>
-                <TouchableOpacity style={styles.sociosAction} onPress={() => router.push('/profil')}>
-                  <Text style={styles.sociosActionText}>Voir ma progression</Text>
-                </TouchableOpacity>
+            {['PARTAGE', 'CONVIVIALITÉ', 'AUTHENTICITÉ'].map((item, index) => (
+              <View
+                key={item}
+                style={[
+                  styles.heroChip,
+                  index === 0 && styles.heroChipRose,
+                  index === 1 && styles.heroChipOrange,
+                  index === 2 && styles.heroChipGreen,
+                ]}
+              >
+                <Text style={styles.heroChipText}>{item}</Text>
               </View>
+            ))}
+          </View>
 
-              <View style={styles.suggestionCard}>
-                <Text style={styles.suggestionEyebrow}>IDEE DU JOUR</Text>
-                <Text style={styles.suggestionTitle}>{highlightedEvent?.title ?? 'Votre prochaine sortie Biltoki'}</Text>
-                <Text style={styles.suggestionText}>
-                  {highlightedEvent
-                    ? `${highlightedEvent.halleName} · ${highlightedEvent.city} · ${highlightedEvent.time}`
-                    : 'Les meilleures ambiances de la semaine dans votre halle.'}
-                </Text>
-                <TouchableOpacity
-                  style={styles.suggestionAction}
-                  onPress={() => highlightedEvent ? router.push(`/evenement/${highlightedEvent.id}` as any) : router.push('/evenements')}
-                >
-                  <Text style={styles.suggestionActionText}>Reserver ce moment</Text>
-                </TouchableOpacity>
-              </View>
+          <View style={styles.heroVisual}>
+            <Image source={{ uri: HERO_IMAGE }} style={styles.heroImage} resizeMode="contain" />
+            <View style={styles.heroVisualCaption}>
               <Text style={styles.heroVisualTitle}>Couleurs des halles</Text>
               <Text style={styles.heroVisualText}>Une ambiance vivante, populaire et généreuse.</Text>
             </View>
@@ -145,35 +117,27 @@ export default function HomeScreen() {
 
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>BONS PLANS</Text>
-            <TouchableOpacity onPress={() => router.push('/actualites')}>
-              <Text style={styles.sectionLink}>Lire plus</Text>
+            <Text style={styles.sectionTitle}>NOS HALLES</Text>
+            <TouchableOpacity onPress={() => router.push('/halles')}>
+              <Text style={styles.sectionLink}>Tout voir</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.digestCard}>
-            <TouchableOpacity style={styles.digestRow} onPress={() => router.push('/actualites')}>
-              <View style={[styles.digestIcon, { backgroundColor: '#D8E9DF' }]}>
-                <Ionicons name="newspaper-outline" size={18} color={Colors.primary} />
-              </View>
-              <View style={styles.digestBody}>
-                <Text style={styles.digestEyebrow}>A lire en {spotlightArticle?.readTime ?? '2 min'}</Text>
-                <Text style={styles.digestTitle}>{spotlightArticle?.title ?? 'Les nouvelles des halles Biltoki'}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={Colors.textSecondary} />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.digestRow} onPress={() => favoriteHalle ? router.push(`/halle/${favoriteHalle.id}` as any) : router.push('/halles')}>
-              <View style={[styles.digestIcon, { backgroundColor: '#F8D9E1' }]}>
-                <Ionicons name="storefront-outline" size={18} color={Colors.primary} />
-              </View>
-              <View style={styles.digestBody}>
-                <Text style={styles.digestEyebrow}>Pause gourmande</Text>
-                <Text style={styles.digestTitle}>{favoriteHalle?.name ?? 'Decouvrir nos halles'}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={Colors.textSecondary} />
-            </TouchableOpacity>
-          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.hallesRow}>
+            {featuredHalles.map((h, index) => (
+              <TouchableOpacity key={h.id} style={styles.halleCard} onPress={() => router.push(`/halle/${h.id}` as any)}>
+                <Image source={{ uri: h.image }} style={styles.halleImage} />
+                <View style={styles.halleBody}>
+                  <View style={[styles.halleBadge, index === 0 && styles.halleBadgeRose, index === 1 && styles.halleBadgeOrange, index === 2 && styles.halleBadgeGreen]}>
+                    <Text style={styles.halleBadgeText}>{h.city.toUpperCase()}</Text>
+                  </View>
+                  <Text style={styles.halleName}>{h.name}</Text>
+                  <Text style={styles.halleDescription} numberOfLines={2}>{h.description}</Text>
+                  <Text style={styles.halleHours}>{h.hours}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
         <View style={styles.section}>
@@ -248,50 +212,35 @@ const styles = StyleSheet.create({
   heroVisualTitle: { fontSize: 16, fontWeight: '900', color: Colors.primary, textTransform: 'uppercase', letterSpacing: 1.1 },
   heroVisualText: { marginTop: 6, fontSize: 13, lineHeight: 19, color: Colors.textSecondary },
   section: { paddingHorizontal: 18, marginTop: 26 },
+  sectionHeader: { marginBottom: 12 },
+  sectionEyebrow: { fontSize: 11, fontWeight: '900', letterSpacing: 2.2, color: Colors.textSecondary, textTransform: 'uppercase' },
   sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   sectionTitle: { fontSize: 22, fontWeight: '900', color: Colors.primary, letterSpacing: 0.8, textTransform: 'uppercase' },
   sectionLink: { fontSize: 12, color: Colors.primary, fontWeight: '900', letterSpacing: 1.6, textTransform: 'uppercase' },
-  insightGrid: { flexDirection: 'row', gap: 10 },
-  sociosCard: {
-    flex: 1,
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  quickCard: {
+    width: '31.5%',
     backgroundColor: Colors.card,
     borderRadius: 20,
-    padding: 14,
+    paddingVertical: 18,
+    paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  sociosTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  sociosEyebrow: { fontSize: 10, color: Colors.textSecondary, fontWeight: '900', letterSpacing: 1.8, textTransform: 'uppercase' },
-  sociosPoints: { marginTop: 8, fontSize: 28, fontWeight: '900', color: Colors.primary },
-  sociosHint: { marginTop: 6, fontSize: 12, lineHeight: 18, color: Colors.textSecondary },
-  sociosAction: {
-    marginTop: 12,
-    backgroundColor: Colors.primary,
-    borderRadius: 12,
-    paddingVertical: 10,
+  quickIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    backgroundColor: Colors.lightGray,
   },
-  sociosActionText: { color: Colors.white, fontSize: 11, fontWeight: '900', letterSpacing: 1.2, textTransform: 'uppercase' },
-  suggestionCard: {
-    flex: 1,
-    backgroundColor: Colors.card,
-    borderRadius: 20,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  suggestionEyebrow: { fontSize: 10, color: Colors.textSecondary, fontWeight: '900', letterSpacing: 1.8, textTransform: 'uppercase' },
-  suggestionTitle: { marginTop: 8, fontSize: 18, lineHeight: 22, fontWeight: '900', color: Colors.primary },
-  suggestionText: { marginTop: 6, fontSize: 12, lineHeight: 17, color: Colors.textSecondary },
-  suggestionAction: {
-    marginTop: 12,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-    borderRadius: 12,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  suggestionActionText: { color: Colors.primary, fontSize: 11, fontWeight: '900', letterSpacing: 1.2, textTransform: 'uppercase' },
+  quickIconRose: { backgroundColor: '#F8D9E1' },
+  quickIconOrange: { backgroundColor: '#F9DAB6' },
+  quickIconGreen: { backgroundColor: '#D8E9DF' },
+  quickIconBlue: { backgroundColor: '#D9E8F1' },
+  quickLabel: { fontSize: 12, fontWeight: '900', color: Colors.primary, textTransform: 'uppercase', letterSpacing: 0.6 },
   eventCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -317,32 +266,31 @@ const styles = StyleSheet.create({
   eventCategory: { fontSize: 10, fontWeight: '900', letterSpacing: 1.4, textTransform: 'uppercase' },
   eventTitle: { fontSize: 15, fontWeight: '900', color: Colors.primary, marginBottom: 4 },
   eventMeta: { fontSize: 12, lineHeight: 16, color: Colors.textSecondary },
-  digestCard: {
+  hallesRow: { gap: 12, paddingRight: 6 },
+  halleCard: {
+    width: 230,
     backgroundColor: Colors.card,
     borderRadius: 24,
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: Colors.border,
-    overflow: 'hidden',
   },
-  digestRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+  halleImage: { width: '100%', height: 130 },
+  halleBody: { padding: 14 },
+  halleBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    marginBottom: 10,
   },
-  digestIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  digestBody: { flex: 1 },
-  digestEyebrow: { fontSize: 10, color: Colors.textSecondary, fontWeight: '900', letterSpacing: 1.3, textTransform: 'uppercase' },
-  digestTitle: { marginTop: 4, fontSize: 14, fontWeight: '900', color: Colors.primary, lineHeight: 18 },
+  halleBadgeRose: { backgroundColor: Colors.rose },
+  halleBadgeOrange: { backgroundColor: Colors.orange },
+  halleBadgeGreen: { backgroundColor: Colors.secondary },
+  halleBadgeText: { color: Colors.white, fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  halleName: { fontSize: 17, fontWeight: '900', color: Colors.primary, textTransform: 'uppercase', lineHeight: 21 },
+  halleDescription: { marginTop: 6, fontSize: 13, lineHeight: 19, color: Colors.textSecondary },
+  halleHours: { marginTop: 10, fontSize: 11, fontWeight: '900', color: Colors.secondary, letterSpacing: 1.2, textTransform: 'uppercase' },
   communityCard: {
     backgroundColor: Colors.card,
     borderRadius: 26,
