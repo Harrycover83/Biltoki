@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  SafeAreaView, Alert, TextInput,
+  SafeAreaView, Alert, TextInput, Modal, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import QRCode from 'react-native-qrcode-svg';
 import { Colors } from '../../constants/Colors';
 import {
   SOCIOS_CARD_MOCK,
@@ -12,6 +13,9 @@ import {
   SOCIOS_REWARDS,
   SOCIOS_RULES,
 } from '../../data/socios';
+import { CardResponse, PassTokenResponse } from '../../services/socios/contracts';
+import { sociosClient } from '../../services/socios/sociosClient';
+import { buildSociosPassPayload, isPassExpired, secondsUntilExpiry } from '../../services/socios/passPayload';
 
 const MOCK_USER = {
   name: 'Marie Dupont',
@@ -28,25 +32,95 @@ export default function ProfilScreen() {
   const [geoloc, setGeoloc] = useState(false);
   const [phone, setPhone] = useState('06 45 22 19 70');
   const [isJoined, setIsJoined] = useState(true);
+  const [card, setCard] = useState<CardResponse | null>(null);
+  const [isCardLoading, setIsCardLoading] = useState(true);
+  const [isEnrollLoading, setIsEnrollLoading] = useState(false);
+  const [isPassLoading, setIsPassLoading] = useState(false);
+  const [passModalVisible, setPassModalVisible] = useState(false);
+  const [passTokenData, setPassTokenData] = useState<PassTokenResponse | null>(null);
+  const [passTimeLeft, setPassTimeLeft] = useState(0);
 
-  const nextReward = SOCIOS_REWARDS.find((reward) => reward.points > MOCK_USER.points);
+  const points = card?.points ?? MOCK_USER.points;
+  const nextReward = SOCIOS_REWARDS.find((reward) => reward.points > points);
   const maxRewardPoints = SOCIOS_REWARDS[SOCIOS_REWARDS.length - 1].points;
-  const progressPercent = Math.min((MOCK_USER.points / maxRewardPoints) * 100, 100);
-  const pointsToNext = nextReward ? nextReward.points - MOCK_USER.points : 0;
+  const progressPercent = Math.min((points / maxRewardPoints) * 100, 100);
+  const pointsToNext = nextReward ? nextReward.points - points : 0;
 
   const phoneDigits = phone.replace(/\D/g, '');
   const maskedPhone = phoneDigits.length >= 10
     ? `${phoneDigits.slice(0, 2)} ${phoneDigits.slice(2, 4)} ${phoneDigits.slice(4, 6)} ** **`
     : 'Numero non renseigne';
 
-  const handleJoinProgram = () => {
+  const walletCard = useMemo(() => ({
+    ...SOCIOS_CARD_MOCK,
+    id: card?.loyaltyId ?? SOCIOS_CARD_MOCK.id,
+    holderName: card?.holderName ?? SOCIOS_CARD_MOCK.holderName,
+    phoneMasked: card?.phoneMasked ?? SOCIOS_CARD_MOCK.phoneMasked,
+  }), [card]);
+
+  const passPayload = useMemo(() => {
+    if (!passTokenData || !card?.loyaltyId || isPassExpired(passTokenData.expiresAt)) {
+      return null;
+    }
+
+    return buildSociosPassPayload(
+      passTokenData.token,
+      passTokenData.nonce,
+      card.loyaltyId,
+      passTokenData.expiresAt
+    );
+  }, [card?.loyaltyId, passTokenData]);
+
+  useEffect(() => {
+    const loadCard = async () => {
+      try {
+        const cardData = await sociosClient.getCard();
+        setCard(cardData);
+      } catch (error) {
+        Alert.alert('Erreur', 'Impossible de charger la carte SOCIOS pour le moment.');
+      } finally {
+        setIsCardLoading(false);
+      }
+    };
+
+    void loadCard();
+  }, []);
+
+  useEffect(() => {
+    if (!passModalVisible || !passTokenData) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const diff = secondsUntilExpiry(passTokenData.expiresAt);
+      setPassTimeLeft(diff);
+
+      if (diff === 0) {
+        setPassTokenData(null);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [passModalVisible, passTokenData]);
+
+  const handleJoinProgram = async () => {
     if (phoneDigits.length < 10) {
       Alert.alert('Numero invalide', 'Merci de saisir un numero de telephone valide.');
       return;
     }
 
-    setIsJoined(true);
-    Alert.alert('Bienvenue dans SOCIOS!', 'Votre numero est enregistre. Vos prochains passages au bar cumuleront des points.');
+    try {
+      setIsEnrollLoading(true);
+      await sociosClient.enroll({ phone });
+      const cardData = await sociosClient.getCard();
+      setCard(cardData);
+      setIsJoined(true);
+      Alert.alert('Bienvenue dans SOCIOS!', 'Votre numero est enregistre. Vos prochains passages au bar cumuleront des points.');
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de mettre a jour le compte pour le moment.');
+    } finally {
+      setIsEnrollLoading(false);
+    }
   };
 
   const handleAddToWallet = () => {
@@ -61,6 +135,25 @@ export default function ProfilScreen() {
       'NFC en preparation',
       'Le mode sans contact sera active apres integration native NFC et configuration des caisses.'
     );
+  };
+
+  const handleGeneratePass = async () => {
+    if (!card?.loyaltyId) {
+      Alert.alert('Carte indisponible', 'La carte SOCIOS est en cours de chargement.');
+      return;
+    }
+
+    try {
+      setIsPassLoading(true);
+      const tokenData = await sociosClient.createPassToken({ loyaltyId: card.loyaltyId });
+      setPassTokenData(tokenData);
+      setPassTimeLeft(secondsUntilExpiry(tokenData.expiresAt));
+      setPassModalVisible(true);
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de generer le pass caisse.');
+    } finally {
+      setIsPassLoading(false);
+    }
   };
 
   return (
@@ -102,8 +195,12 @@ export default function ProfilScreen() {
                 placeholderTextColor={Colors.textSecondary}
               />
             </View>
-            <TouchableOpacity style={styles.joinButton} onPress={handleJoinProgram}>
-              <Text style={styles.joinButtonText}>{isJoined ? 'Mettre a jour' : 'Rejoindre'}</Text>
+            <TouchableOpacity
+              style={[styles.joinButton, isEnrollLoading && styles.disabledBtn]}
+              onPress={handleJoinProgram}
+              disabled={isEnrollLoading}
+            >
+              <Text style={styles.joinButtonText}>{isEnrollLoading ? 'Patientez...' : isJoined ? 'Mettre a jour' : 'Rejoindre'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -115,7 +212,7 @@ export default function ProfilScreen() {
           <View style={styles.pointsRow}>
             <View>
               <Text style={styles.pointsLabel}>Points SOCIOS</Text>
-              <Text style={styles.pointsValue}>{MOCK_USER.points} pts</Text>
+              <Text style={styles.pointsValue}>{points} pts</Text>
             </View>
             <View style={styles.nextLevel}>
               <Text style={styles.nextLevelText}>
@@ -147,19 +244,28 @@ export default function ProfilScreen() {
               </View>
             </View>
 
-            <Text style={styles.walletId}>{SOCIOS_CARD_MOCK.id}</Text>
+            <Text style={styles.walletId}>{walletCard.id}</Text>
 
             <View style={styles.walletBottomRow}>
               <View>
                 <Text style={styles.walletLabel}>Titulaire</Text>
-                <Text style={styles.walletValue}>{SOCIOS_CARD_MOCK.holderName}</Text>
+                <Text style={styles.walletValue}>{walletCard.holderName}</Text>
               </View>
               <View>
                 <Text style={styles.walletLabel}>Numero</Text>
-                <Text style={styles.walletValue}>{SOCIOS_CARD_MOCK.phoneMasked}</Text>
+                <Text style={styles.walletValue}>{walletCard.phoneMasked}</Text>
               </View>
             </View>
           </View>
+
+          <TouchableOpacity
+            style={[styles.presentPassBtn, (isPassLoading || isCardLoading) && styles.disabledBtn]}
+            onPress={handleGeneratePass}
+            disabled={isPassLoading || isCardLoading}
+          >
+            <Ionicons name="qr-code-outline" size={17} color={Colors.white} />
+            <Text style={styles.presentPassBtnText}>{isPassLoading ? 'Generation...' : 'Presenter en caisse'}</Text>
+          </TouchableOpacity>
 
           <View style={styles.walletActionsRow}>
             <TouchableOpacity style={styles.walletPrimaryAction} onPress={handleAddToWallet}>
@@ -175,7 +281,7 @@ export default function ProfilScreen() {
 
           <View style={styles.walletInfoRow}>
             <Ionicons name="information-circle-outline" size={15} color={Colors.textSecondary} />
-            <Text style={styles.walletInfoText}>{SOCIOS_CARD_MOCK.nfcLabel}</Text>
+            <Text style={styles.walletInfoText}>{walletCard.nfcLabel}{isCardLoading ? ' · chargement...' : ''}</Text>
           </View>
         </View>
 
@@ -198,7 +304,7 @@ export default function ProfilScreen() {
           <Text style={styles.sectionTitle}>Recompenses SOCIOS</Text>
           <View style={styles.rewardsGrid}>
             {SOCIOS_REWARDS.map((reward) => {
-              const unlocked = MOCK_USER.points >= reward.points;
+              const unlocked = points >= reward.points;
               return (
                 <TouchableOpacity
                   key={reward.id}
@@ -206,7 +312,7 @@ export default function ProfilScreen() {
                   onPress={() =>
                     unlocked
                       ? Alert.alert('Recompense activee', `${reward.title} est disponible. Montrez ce message en caisse.`)
-                      : Alert.alert('Pas encore', `Il vous faut ${reward.points - MOCK_USER.points} pts de plus.`)
+                      : Alert.alert('Pas encore', `Il vous faut ${reward.points - points} pts de plus.`)
                   }
                 >
                   <Ionicons
@@ -285,6 +391,57 @@ export default function ProfilScreen() {
           <Text style={styles.logoutText}>Se déconnecter</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <Modal visible={passModalVisible} transparent animationType="slide" onRequestClose={() => setPassModalVisible(false)}>
+        <View style={styles.passModalBackdrop}>
+          <View style={styles.passModalCard}>
+            <View style={styles.passModalHeader}>
+              <Text style={styles.passModalTitle}>Pass Caisse SOCIOS</Text>
+              <TouchableOpacity onPress={() => {
+                setPassModalVisible(false);
+                setPassTokenData(null);
+              }}>
+                <Ionicons name="close" size={20} color={Colors.primary} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.passModalSubtitle}>Montrez ce code au bar. Il expire rapidement pour eviter la fraude.</Text>
+
+            <View style={styles.passQrCard}>
+              {passPayload ? (
+                <QRCode value={passPayload} size={170} />
+              ) : (
+                <View style={styles.passQrFallback}>
+                  <Ionicons name="warning-outline" size={22} color={Colors.rose} />
+                  <Text style={styles.passQrFallbackText}>Pass expire. Regenerer un nouveau code.</Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.passTokenBox}>
+              <Text style={styles.passTokenText}>
+                {passTokenData?.token.match(/.{1,4}/g)?.join(' ') ?? 'TOKEN EXPIRE'}
+              </Text>
+            </View>
+
+            <View style={styles.passMetaRow}>
+              <Ionicons name="time-outline" size={16} color={passTimeLeft > 10 ? Colors.secondary : Colors.rose} />
+              <Text style={[styles.passMetaText, passTimeLeft <= 10 && { color: Colors.rose }]}>Expire dans {passTimeLeft}s</Text>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.passRefreshBtn, isPassLoading && styles.disabledBtn]}
+              onPress={handleGeneratePass}
+              disabled={isPassLoading}
+            >
+              <Ionicons name="refresh" size={15} color={Colors.primary} />
+              <Text style={styles.passRefreshText}>Regenerer un pass</Text>
+            </TouchableOpacity>
+
+            {isPassLoading ? <ActivityIndicator style={styles.passLoadingIndicator} color={Colors.primary} /> : null}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -346,6 +503,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
+  disabledBtn: { opacity: 0.55 },
   joinButtonText: { color: Colors.white, fontWeight: '900', fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase' },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
   statusText: { color: Colors.textSecondary, fontSize: 12, fontWeight: '700' },
@@ -412,6 +570,17 @@ const styles = StyleSheet.create({
   walletBottomRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
   walletLabel: { color: 'rgba(255,255,255,0.74)', fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.3 },
   walletValue: { color: Colors.white, fontSize: 12, fontWeight: '900', marginTop: 4, letterSpacing: 0.8 },
+  presentPassBtn: {
+    marginTop: 12,
+    backgroundColor: Colors.secondary,
+    borderRadius: 12,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  presentPassBtnText: { color: Colors.white, fontSize: 11, fontWeight: '900', letterSpacing: 1.1, textTransform: 'uppercase' },
   walletActionsRow: { flexDirection: 'row', gap: 10, marginTop: 12 },
   walletPrimaryAction: {
     flex: 1,
@@ -547,4 +716,63 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   logoutText: { fontSize: 15, fontWeight: '700', color: Colors.primary },
+  passModalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'flex-end',
+    padding: 16,
+  },
+  passModalCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: 16,
+  },
+  passModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  passModalTitle: { fontSize: 18, fontWeight: '900', color: Colors.primary, textTransform: 'uppercase' },
+  passModalSubtitle: { marginTop: 8, color: Colors.textSecondary, fontSize: 12, lineHeight: 18 },
+  passQrCard: {
+    marginTop: 14,
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  passQrFallback: { alignItems: 'center', gap: 8 },
+  passQrFallbackText: { color: Colors.rose, fontSize: 12, textAlign: 'center', fontWeight: '700' },
+  passTokenBox: {
+    marginTop: 14,
+    backgroundColor: Colors.paper,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+  },
+  passTokenText: {
+    color: Colors.primary,
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: 1.4,
+    textAlign: 'center',
+  },
+  passMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 },
+  passMetaText: { color: Colors.secondary, fontSize: 12, fontWeight: '800' },
+  passRefreshBtn: {
+    marginTop: 12,
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+    borderRadius: 12,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  passRefreshText: { color: Colors.primary, fontSize: 11, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase' },
+  passLoadingIndicator: { marginTop: 10 },
 });

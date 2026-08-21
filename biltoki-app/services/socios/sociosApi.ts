@@ -1,0 +1,109 @@
+import {
+  CardResponse,
+  EnrollRequest,
+  EnrollResponse,
+  PassTokenRequest,
+  PassTokenResponse,
+  ScanRedeemRequest,
+  ScanRedeemResponse,
+} from './contracts';
+
+const NETWORK_LATENCY_MS = 450;
+
+let mockCard: CardResponse = {
+  loyaltyId: 'SOC-5C-A1-9984',
+  holderName: 'MARIE DUPONT',
+  phoneMasked: '06 45 22 ** **',
+  points: 340,
+  tier: 'Membre SOCIOS',
+  nextRewardPoints: 450,
+  updatedAt: new Date().toISOString(),
+};
+
+const usedTokens = new Set<string>();
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function randomId(prefix: string) {
+  return `${prefix}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+}
+
+function randomToken(size = 28) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = '';
+  for (let i = 0; i < size; i += 1) {
+    out += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return out;
+}
+
+export async function enrollSocios(payload: EnrollRequest): Promise<EnrollResponse> {
+  await wait(NETWORK_LATENCY_MS);
+
+  const digits = payload.phone.replace(/\D/g, '');
+  const masked = digits.length >= 10
+    ? `${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 6)} ** **`
+    : '06 ** ** ** **';
+
+  mockCard = {
+    ...mockCard,
+    phoneMasked: masked,
+    updatedAt: new Date().toISOString(),
+  };
+
+  return {
+    customerId: randomId('CUS'),
+    loyaltyId: mockCard.loyaltyId,
+    phoneMasked: mockCard.phoneMasked,
+    enrolledAt: new Date().toISOString(),
+  };
+}
+
+export async function getSociosCard(): Promise<CardResponse> {
+  await wait(NETWORK_LATENCY_MS);
+  return mockCard;
+}
+
+export async function createPassToken(payload: PassTokenRequest): Promise<PassTokenResponse> {
+  await wait(250);
+
+  if (payload.loyaltyId !== mockCard.loyaltyId) {
+    throw new Error('Unknown loyalty card');
+  }
+
+  const expiresAt = new Date(Date.now() + 60_000).toISOString();
+
+  return {
+    token: randomToken(),
+    nonce: randomId('NONCE'),
+    expiresAt,
+  };
+}
+
+export async function redeemScan(payload: ScanRedeemRequest): Promise<ScanRedeemResponse> {
+  await wait(NETWORK_LATENCY_MS);
+
+  if (usedTokens.has(payload.token)) {
+    return { accepted: false, reason: 'replay' };
+  }
+
+  usedTokens.add(payload.token);
+  const pointsDelta = Math.max(1, Math.floor(payload.amountEur));
+  const nextBalance = mockCard.points + pointsDelta;
+
+  mockCard = {
+    ...mockCard,
+    points: nextBalance,
+    updatedAt: new Date().toISOString(),
+    nextRewardPoints: nextBalance < 450 ? 450 : nextBalance < 700 ? 700 : undefined,
+  };
+
+  return {
+    accepted: true,
+    pointsDelta,
+    newBalance: nextBalance,
+    eventId: randomId('EVT'),
+  };
+}

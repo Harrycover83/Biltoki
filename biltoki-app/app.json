@@ -3,6 +3,12 @@
     "name": "Biltoki",
     "slug": "biltoki-app",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "biltoki",
@@ -11,11 +17,13 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.biltoki.app",
+      "buildNumber": "1",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Biltoki utilise votre position pour trouver la halle la plus proche."
       }
     },
     "android": {
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E8521A",
         "foregroundImage": "./assets/android-icon-foreground.png",
