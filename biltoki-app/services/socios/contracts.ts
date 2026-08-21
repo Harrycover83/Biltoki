@@ -3,12 +3,47 @@ export const SOCIOS_API = {
   card: '/socios/card',
   passToken: '/socios/pass-token',
   scanRedeem: '/socios/scan-redeem',
+  requestOtp: '/socios/request-otp',
+  verifyOtp: '/socios/verify-otp',
 } as const;
 
 export interface EnrollRequest {
   phone: string;
   hallId?: string;
   consentMarketing?: boolean;
+}
+
+export interface RequestOtpRequest {
+  phone: string;
+  purpose?: 'enroll' | 'login';
+}
+
+export interface RequestOtpResponse {
+  verificationId: string;
+  expiresAt: string;
+  resendAfterSeconds: number;
+}
+
+export interface VerifyOtpRequest {
+  verificationId: string;
+  code: string;
+  deviceId: string;
+}
+
+export interface SociosSession {
+  sessionId: string;
+  accessToken: string;
+  refreshToken: string;
+  deviceId: string;
+  phone: string;
+  expiresAt: string;
+}
+
+export interface VerifyOtpResponse {
+  verified: boolean;
+  phone: string;
+  phoneMasked: string;
+  session: SociosSession;
 }
 
 export interface EnrollResponse {

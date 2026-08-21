@@ -13,9 +13,10 @@ import {
   SOCIOS_REWARDS,
   SOCIOS_RULES,
 } from '../../data/socios';
-import { CardResponse, PassTokenResponse } from '../../services/socios/contracts';
+import { CardResponse, PassTokenResponse, SociosSession } from '../../services/socios/contracts';
 import { sociosClient } from '../../services/socios/sociosClient';
 import { buildSociosPassPayload, isPassExpired, secondsUntilExpiry } from '../../services/socios/passPayload';
+import { clearSociosSession, getOrCreateDeviceId, loadSociosSession, saveSociosSession } from '../../services/socios/sociosSession';
 
 const MOCK_USER = {
   name: 'Marie Dupont',
@@ -31,10 +32,17 @@ export default function ProfilScreen() {
   const [notifs, setNotifs] = useState(true);
   const [geoloc, setGeoloc] = useState(false);
   const [phone, setPhone] = useState('06 45 22 19 70');
-  const [isJoined, setIsJoined] = useState(true);
+  const [otpCode, setOtpCode] = useState('');
+  const [verificationId, setVerificationId] = useState<string | null>(null);
+  const [otpExpiresAt, setOtpExpiresAt] = useState<string | null>(null);
+  const [otpResendAfterSeconds, setOtpResendAfterSeconds] = useState(0);
+  const [otpSent, setOtpSent] = useState(false);
+  const [session, setSession] = useState<SociosSession | null>(null);
+  const [isRestoringSession, setIsRestoringSession] = useState(true);
   const [card, setCard] = useState<CardResponse | null>(null);
   const [isCardLoading, setIsCardLoading] = useState(true);
-  const [isEnrollLoading, setIsEnrollLoading] = useState(false);
+  const [isOtpRequestLoading, setIsOtpRequestLoading] = useState(false);
+  const [isOtpVerifyLoading, setIsOtpVerifyLoading] = useState(false);
   const [isPassLoading, setIsPassLoading] = useState(false);
   const [passModalVisible, setPassModalVisible] = useState(false);
   const [passTokenData, setPassTokenData] = useState<PassTokenResponse | null>(null);
@@ -45,6 +53,7 @@ export default function ProfilScreen() {
   const maxRewardPoints = SOCIOS_REWARDS[SOCIOS_REWARDS.length - 1].points;
   const progressPercent = Math.min((points / maxRewardPoints) * 100, 100);
   const pointsToNext = nextReward ? nextReward.points - points : 0;
+  const isJoined = Boolean(session);
 
   const phoneDigits = phone.replace(/\D/g, '');
   const maskedPhone = phoneDigits.length >= 10
@@ -70,6 +79,22 @@ export default function ProfilScreen() {
       passTokenData.expiresAt
     );
   }, [card?.loyaltyId, passTokenData]);
+
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const storedSession = await loadSociosSession();
+        if (storedSession) {
+          setSession(storedSession);
+          setPhone(storedSession.phone);
+        }
+      } finally {
+        setIsRestoringSession(false);
+      }
+    };
+
+    void restoreSession();
+  }, []);
 
   useEffect(() => {
     const loadCard = async () => {
@@ -103,23 +128,73 @@ export default function ProfilScreen() {
     return () => clearInterval(interval);
   }, [passModalVisible, passTokenData]);
 
-  const handleJoinProgram = async () => {
+  useEffect(() => {
+    if (!otpExpiresAt) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const remaining = secondsUntilExpiry(otpExpiresAt);
+      if (remaining === 0) {
+        setOtpSent(false);
+        setVerificationId(null);
+        setOtpExpiresAt(null);
+        setOtpCode('');
+        setOtpResendAfterSeconds(0);
+      }
+
+      setOtpResendAfterSeconds((prev) => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [otpExpiresAt]);
+
+  const handleRequestOtp = async () => {
     if (phoneDigits.length < 10) {
       Alert.alert('Numero invalide', 'Merci de saisir un numero de telephone valide.');
       return;
     }
 
     try {
-      setIsEnrollLoading(true);
-      await sociosClient.enroll({ phone });
+      setIsOtpRequestLoading(true);
+      const otp = await sociosClient.requestOtp({ phone, purpose: 'enroll' });
+      setVerificationId(otp.verificationId);
+      setOtpExpiresAt(otp.expiresAt);
+      setOtpResendAfterSeconds(otp.resendAfterSeconds);
+      setOtpSent(true);
+      Alert.alert('Code envoyé', 'Un code de vérification a été envoyé par SMS.');
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible d’envoyer le code de vérification.');
+    } finally {
+      setIsOtpRequestLoading(false);
+    }
+  };
+
+  const handleVerifyOtpAndEnroll = async () => {
+    if (!verificationId || otpCode.replace(/\D/g, '').length !== 6) {
+      Alert.alert('Code invalide', 'Merci de saisir le code à 6 chiffres reçu par SMS.');
+      return;
+    }
+
+    try {
+      setIsOtpVerifyLoading(true);
+      const deviceId = await getOrCreateDeviceId();
+      const result = await sociosClient.verifyOtp({ verificationId, code: otpCode.replace(/\D/g, ''), deviceId });
+      await sociosClient.enroll({ phone: result.phone });
+      await saveSociosSession(result.session);
+      setSession(result.session);
+      setPhone(result.session.phone);
       const cardData = await sociosClient.getCard();
       setCard(cardData);
-      setIsJoined(true);
-      Alert.alert('Bienvenue dans SOCIOS!', 'Votre numero est enregistre. Vos prochains passages au bar cumuleront des points.');
+      setOtpSent(false);
+      setVerificationId(null);
+      setOtpExpiresAt(null);
+      setOtpCode('');
+      Alert.alert('Compte activé', 'Votre numéro a été vérifié et le compte SOCIOS est actif.');
     } catch (error) {
-      Alert.alert('Erreur', 'Impossible de mettre a jour le compte pour le moment.');
+      Alert.alert('Erreur', 'Le code est invalide ou expiré.');
     } finally {
-      setIsEnrollLoading(false);
+      setIsOtpVerifyLoading(false);
     }
   };
 
@@ -156,6 +231,16 @@ export default function ProfilScreen() {
     }
   };
 
+  const handleLogout = async () => {
+    await clearSociosSession();
+    setSession(null);
+    setOtpSent(false);
+    setVerificationId(null);
+    setOtpExpiresAt(null);
+    setOtpCode('');
+    Alert.alert('Déconnexion', 'La session a été supprimée de cet appareil.');
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -181,7 +266,8 @@ export default function ProfilScreen() {
           </View>
 
           <Text style={styles.ruleText}>{SOCIOS_RULES.conversionLabel}</Text>
-          <Text style={styles.ruleSubtext}>{SOCIOS_RULES.iPadLabel}</Text>
+          <Text style={styles.ruleSubtext}>{SOCIOS_RULES.iPadLabel} Pour créer un compte, il faut d’abord confirmer le numéro par SMS.</Text>
+          <Text style={styles.ruleSubtext}>La session est ensuite liée à cet appareil. Si le même compte se connecte sur un autre téléphone, l’ancienne session est révoquée côté serveur.</Text>
 
           <View style={styles.phoneRow}>
             <View style={{ flex: 1 }}>
@@ -196,17 +282,48 @@ export default function ProfilScreen() {
               />
             </View>
             <TouchableOpacity
-              style={[styles.joinButton, isEnrollLoading && styles.disabledBtn]}
-              onPress={handleJoinProgram}
-              disabled={isEnrollLoading}
+              style={[styles.joinButton, isOtpRequestLoading && styles.disabledBtn]}
+              onPress={handleRequestOtp}
+              disabled={isOtpRequestLoading}
             >
-              <Text style={styles.joinButtonText}>{isEnrollLoading ? 'Patientez...' : isJoined ? 'Mettre a jour' : 'Rejoindre'}</Text>
+              <Text style={styles.joinButtonText}>{isOtpRequestLoading ? 'Envoi...' : otpSent ? 'Renvoyer le code' : 'Recevoir le code'}</Text>
             </TouchableOpacity>
           </View>
 
+          {otpSent ? (
+            <View style={styles.otpCard}>
+              <Text style={styles.otpTitle}>Validation du numéro</Text>
+              <Text style={styles.otpSubtitle}>Saisis le code reçu par SMS pour activer le compte.</Text>
+              <TextInput
+                style={styles.otpInput}
+                value={otpCode}
+                onChangeText={setOtpCode}
+                keyboardType="number-pad"
+                maxLength={6}
+                placeholder="123456"
+                placeholderTextColor={Colors.textSecondary}
+              />
+              <TouchableOpacity
+                style={[styles.otpVerifyButton, isOtpVerifyLoading && styles.disabledBtn]}
+                onPress={handleVerifyOtpAndEnroll}
+                disabled={isOtpVerifyLoading}
+              >
+                <Text style={styles.otpVerifyButtonText}>{isOtpVerifyLoading ? 'Verification...' : 'Verifier et activer'}</Text>
+              </TouchableOpacity>
+              <Text style={styles.otpHint}>
+                {otpExpiresAt ? `Code valable encore ${secondsUntilExpiry(otpExpiresAt)}s` : ''}
+              </Text>
+              <Text style={styles.otpHint}>
+                {otpResendAfterSeconds > 0 ? `Renvoyer disponible dans ${otpResendAfterSeconds}s` : 'Tu peux demander un nouveau code si besoin.'}
+              </Text>
+            </View>
+          ) : null}
+
           <View style={styles.statusRow}>
             <Ionicons name="checkmark-circle" size={16} color={Colors.secondary} />
-            <Text style={styles.statusText}>Compte associe: {isJoined ? maskedPhone : 'Non active'}</Text>
+            <Text style={styles.statusText}>
+              Compte associe: {isRestoringSession ? 'Restauration de la session...' : isJoined ? `${session?.phone ?? maskedPhone} · appareil ${session?.deviceId ?? 'local'}` : 'Non active'}
+            </Text>
           </View>
 
           <View style={styles.pointsRow}>
@@ -383,10 +500,7 @@ export default function ProfilScreen() {
           </View>
         </View>
 
-        <TouchableOpacity
-          style={styles.logoutBtn}
-          onPress={() => Alert.alert('Déconnexion', 'Vous avez été déconnecté.')}
-        >
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={18} color={Colors.primary} />
           <Text style={styles.logoutText}>Se déconnecter</Text>
         </TouchableOpacity>

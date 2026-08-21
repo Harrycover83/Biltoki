@@ -4,8 +4,13 @@ import {
   EnrollResponse,
   PassTokenRequest,
   PassTokenResponse,
+  SociosSession,
+  RequestOtpRequest,
+  RequestOtpResponse,
   ScanRedeemRequest,
   ScanRedeemResponse,
+  VerifyOtpResponse,
+  VerifyOtpRequest,
 } from './contracts';
 
 const NETWORK_LATENCY_MS = 450;
@@ -21,6 +26,8 @@ let mockCard: CardResponse = {
 };
 
 const usedTokens = new Set<string>();
+const otpChallenges = new Map<string, { phone: string; code: string; expiresAt: number }>();
+const activeSessionsByPhone = new Map<string, SociosSession>();
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -39,13 +46,92 @@ function randomToken(size = 28) {
   return out;
 }
 
+function randomOtp() {
+  return `${Math.floor(100000 + Math.random() * 900000)}`;
+}
+
+function normalizePhone(phone: string) {
+  return phone.replace(/\D/g, '');
+}
+
+function buildMaskedPhone(phone: string) {
+  const digits = normalizePhone(phone);
+  return digits.length >= 10
+    ? `${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 6)} ** **`
+    : '06 ** ** ** **';
+}
+
+function createSession(deviceId: string, phone: string): SociosSession {
+  return {
+    sessionId: randomId('SES'),
+    accessToken: randomToken(32),
+    refreshToken: randomToken(40),
+    deviceId,
+    phone,
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60_000).toISOString(),
+  };
+}
+
+export async function requestOtp(payload: RequestOtpRequest): Promise<RequestOtpResponse> {
+  await wait(NETWORK_LATENCY_MS);
+
+  const verificationId = randomId('VER');
+  const code = randomOtp();
+  const expiresAtMs = Date.now() + 5 * 60_000;
+
+  otpChallenges.set(verificationId, {
+    phone: normalizePhone(payload.phone),
+    code,
+    expiresAt: expiresAtMs,
+  });
+
+  // Mock only: in dev, the code can be observed in console while integrating SMS provider.
+  console.log('[SOCIOS OTP MOCK]', { verificationId, code });
+
+  return {
+    verificationId,
+    expiresAt: new Date(expiresAtMs).toISOString(),
+    resendAfterSeconds: 30,
+  };
+}
+
+export async function verifyOtp(payload: VerifyOtpRequest): Promise<VerifyOtpResponse> {
+  await wait(NETWORK_LATENCY_MS);
+
+  const challenge = otpChallenges.get(payload.verificationId);
+  if (!challenge) {
+    throw new Error('Unknown verification challenge');
+  }
+
+  if (Date.now() > challenge.expiresAt) {
+    otpChallenges.delete(payload.verificationId);
+    throw new Error('OTP expired');
+  }
+
+  if (challenge.code !== payload.code) {
+    throw new Error('OTP invalid');
+  }
+
+  const previousSession = activeSessionsByPhone.get(challenge.phone);
+  if (previousSession && previousSession.deviceId !== payload.deviceId) {
+    activeSessionsByPhone.delete(challenge.phone);
+  }
+
+  const session = createSession(payload.deviceId, challenge.phone);
+  activeSessionsByPhone.set(challenge.phone, session);
+  otpChallenges.delete(payload.verificationId);
+  return {
+    verified: true,
+    phone: challenge.phone,
+    phoneMasked: buildMaskedPhone(challenge.phone),
+    session,
+  };
+}
+
 export async function enrollSocios(payload: EnrollRequest): Promise<EnrollResponse> {
   await wait(NETWORK_LATENCY_MS);
 
-  const digits = payload.phone.replace(/\D/g, '');
-  const masked = digits.length >= 10
-    ? `${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 6)} ** **`
-    : '06 ** ** ** **';
+  const masked = buildMaskedPhone(payload.phone);
 
   mockCard = {
     ...mockCard,

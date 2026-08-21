@@ -4,8 +4,18 @@ import {
   EnrollResponse,
   PassTokenRequest,
   PassTokenResponse,
+  RequestOtpRequest,
+  RequestOtpResponse,
+  VerifyOtpResponse,
+  VerifyOtpRequest,
 } from './contracts';
-import { createPassToken as mockCreatePassToken, enrollSocios as mockEnrollSocios, getSociosCard as mockGetSociosCard } from './sociosApi';
+import {
+  createPassToken as mockCreatePassToken,
+  enrollSocios as mockEnrollSocios,
+  getSociosCard as mockGetSociosCard,
+  requestOtp as mockRequestOtp,
+  verifyOtp as mockVerifyOtp,
+} from './sociosApi';
 
 const USE_MOCK = process.env.EXPO_PUBLIC_SOCIOS_USE_MOCK !== 'false';
 const API_BASE_URL = process.env.EXPO_PUBLIC_SOCIOS_API_BASE_URL ?? 'https://api.biltoki.example';
@@ -79,5 +89,21 @@ export const sociosClient = {
     }
 
     return postJson<PassTokenResponse, PassTokenRequest>('/socios/pass-token', payload);
+  },
+
+  async requestOtp(payload: RequestOtpRequest): Promise<RequestOtpResponse> {
+    if (USE_MOCK) {
+      return mockRequestOtp(payload);
+    }
+
+    return postJson<RequestOtpResponse, RequestOtpRequest>('/socios/request-otp', payload);
+  },
+
+  async verifyOtp(payload: VerifyOtpRequest): Promise<VerifyOtpResponse> {
+    if (USE_MOCK) {
+      return mockVerifyOtp(payload);
+    }
+
+    return postJson<VerifyOtpResponse, VerifyOtpRequest>('/socios/verify-otp', payload);
   },
 };

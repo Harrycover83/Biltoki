@@ -10,9 +10,30 @@ This plan is designed for Expo + React Native app and Netlify web deployment, wi
 
 ## Current State
 - App has SOCIOS UI and wallet-style card mock in `app/(tabs)/profil.tsx`
-- No backend identity/token service yet
+- Phone + OTP enrollment exists in the app
+- Local session persistence exists in the app, bound to the current device
+- No real backend identity/token service yet
 - No signed Wallet pass generation yet
 - No native NFC scanning/writing flow yet
+
+## Account Creation Strategy
+The customer account creation flow should be secured with phone verification:
+- User enters phone number
+- App requests a one-time SMS OTP
+- User confirms the OTP
+- Only then is the SOCIOS account enrolled/linked
+
+This avoids fake account creation from arbitrary phone input on a mobile device.
+
+## Session Security Strategy
+After OTP verification, the backend should issue a device-bound session:
+- Store a short-lived access token plus a refresh token
+- Bind the session to a generated device identifier
+- Allow only one active session per customer by default
+- When a second phone logs in, revoke the previous session
+- Keep the app logged in until logout, expiry, or server revocation
+
+This gives the user a persistent login on one phone without enabling casual account sharing across multiple phones.
 
 ## Phase 1 - MVP Pass (QR first)
 ### Scope
@@ -37,6 +58,7 @@ This plan is designed for Expo + React Native app and Netlify web deployment, wi
 - One-time nonce + replay protection
 - Signature verification server-side only
 - Rate limit by account + device
+- Session is device-bound and revocable
 
 ### App tasks
 - Add auth/session binding for customer id
