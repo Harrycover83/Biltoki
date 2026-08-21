@@ -64,9 +64,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profil"
         options={{
-          title: 'Mon B!',
-          tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
-          headerTitle: 'Mon Compte B!',
+          title: 'Socios',
+          tabBarIcon: ({ color, size }) => <Ionicons name="flame-outline" size={size} color={color} />,
+          headerTitle: 'Socios',
         }}
       />
     </Tabs>

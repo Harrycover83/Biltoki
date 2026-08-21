@@ -1,41 +1,61 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  SafeAreaView, Alert,
+  SafeAreaView, Alert, TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
+import {
+  SOCIOS_ONBOARDING_STEPS,
+  SOCIOS_REFERENTS,
+  SOCIOS_REWARDS,
+  SOCIOS_RULES,
+} from '../../data/socios';
 
 const MOCK_USER = {
   name: 'Marie Dupont',
   email: 'marie.dupont@email.com',
   points: 340,
-  level: 'Bon Vivant',
+  eurosSpentAtBar: 340,
+  level: 'Membre SOCIOS',
   hallesFavorites: ['Halles des 5 Cantons', 'Halle du Haras'],
   memberSince: 'Janvier 2025',
 };
 
-const REWARDS = [
-  { id: '1', title: 'Verre offert au bar', points: 100, icon: 'wine' as const },
-  { id: '2', title: '10% sur vos achats', points: 200, icon: 'pricetag' as const },
-  { id: '3', title: 'Place événement gratuite', points: 400, icon: 'ticket' as const },
-  { id: '4', title: 'Panier découverte', points: 600, icon: 'basket' as const },
-];
-
 export default function ProfilScreen() {
   const [notifs, setNotifs] = useState(true);
   const [geoloc, setGeoloc] = useState(false);
+  const [phone, setPhone] = useState('06 45 22 19 70');
+  const [isJoined, setIsJoined] = useState(true);
 
-  const progressPercent = Math.min((MOCK_USER.points / 500) * 100, 100);
+  const nextReward = SOCIOS_REWARDS.find((reward) => reward.points > MOCK_USER.points);
+  const maxRewardPoints = SOCIOS_REWARDS[SOCIOS_REWARDS.length - 1].points;
+  const progressPercent = Math.min((MOCK_USER.points / maxRewardPoints) * 100, 100);
+  const pointsToNext = nextReward ? nextReward.points - MOCK_USER.points : 0;
+
+  const phoneDigits = phone.replace(/\D/g, '');
+  const maskedPhone = phoneDigits.length >= 10
+    ? `${phoneDigits.slice(0, 2)} ${phoneDigits.slice(2, 4)} ${phoneDigits.slice(4, 6)} ** **`
+    : 'Numero non renseigne';
+
+  const handleJoinProgram = () => {
+    if (phoneDigits.length < 10) {
+      Alert.alert('Numero invalide', 'Merci de saisir un numero de telephone valide.');
+      return;
+    }
+
+    setIsJoined(true);
+    Alert.alert('Bienvenue dans SOCIOS!', 'Votre numero est enregistre. Vos prochains passages au bar cumuleront des points.');
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.memberCard}>
           <View style={styles.memberTopLine}>
-            <Text style={styles.memberEyebrow}>COMMUNAUTÉ B!</Text>
+            <Text style={styles.memberEyebrow}>{SOCIOS_RULES.programName}</Text>
             <View style={styles.bLogo}>
-              <Text style={styles.bLogoText}>B!</Text>
+              <Text style={styles.bLogoText}>S!</Text>
             </View>
           </View>
 
@@ -52,47 +72,106 @@ export default function ProfilScreen() {
             </View>
           </View>
 
+          <Text style={styles.ruleText}>{SOCIOS_RULES.conversionLabel}</Text>
+          <Text style={styles.ruleSubtext}>{SOCIOS_RULES.iPadLabel}</Text>
+
+          <View style={styles.phoneRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.phoneLabel}>Numero de telephone</Text>
+              <TextInput
+                style={styles.phoneInput}
+                value={phone}
+                onChangeText={setPhone}
+                keyboardType="phone-pad"
+                placeholder="06 00 00 00 00"
+                placeholderTextColor={Colors.textSecondary}
+              />
+            </View>
+            <TouchableOpacity style={styles.joinButton} onPress={handleJoinProgram}>
+              <Text style={styles.joinButtonText}>{isJoined ? 'Mettre a jour' : 'Rejoindre'}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.statusRow}>
+            <Ionicons name="checkmark-circle" size={16} color={Colors.secondary} />
+            <Text style={styles.statusText}>Compte associe: {isJoined ? maskedPhone : 'Non active'}</Text>
+          </View>
+
           <View style={styles.pointsRow}>
             <View>
-              <Text style={styles.pointsLabel}>Points B!</Text>
+              <Text style={styles.pointsLabel}>Points SOCIOS</Text>
               <Text style={styles.pointsValue}>{MOCK_USER.points} pts</Text>
             </View>
             <View style={styles.nextLevel}>
-              <Text style={styles.nextLevelText}>Prochain palier : 500 pts</Text>
+              <Text style={styles.nextLevelText}>
+                {nextReward
+                  ? `Prochain palier: ${nextReward.points} pts (${pointsToNext} restants)`
+                  : 'Tous les paliers sont debloques'}
+              </Text>
             </View>
           </View>
+
+          <Text style={styles.eurosValue}>{MOCK_USER.eurosSpentAtBar} euros cumules au bar</Text>
           <View style={styles.progressBar}>
             <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mes récompenses</Text>
+          <Text style={styles.sectionTitle}>Comment ca marche</Text>
+          <View style={styles.stepsCard}>
+            {SOCIOS_ONBOARDING_STEPS.map((step, index) => (
+              <View key={step} style={styles.stepRow}>
+                <View style={styles.stepIndexCircle}>
+                  <Text style={styles.stepIndexText}>{index + 1}</Text>
+                </View>
+                <Text style={styles.stepText}>{step}</Text>
+              </View>
+            ))}
+          </View>
+          <Text style={styles.trainingText}>{SOCIOS_RULES.nextTrainingLabel}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Recompenses SOCIOS</Text>
           <View style={styles.rewardsGrid}>
-            {REWARDS.map((r) => {
-              const unlocked = MOCK_USER.points >= r.points;
+            {SOCIOS_REWARDS.map((reward) => {
+              const unlocked = MOCK_USER.points >= reward.points;
               return (
                 <TouchableOpacity
-                  key={r.id}
+                  key={reward.id}
                   style={[styles.rewardCard, !unlocked && styles.rewardCardLocked]}
                   onPress={() =>
                     unlocked
-                      ? Alert.alert('Récompense', `"${r.title}" activée ! Montrez ce message en caisse.`)
-                      : Alert.alert('Pas encore', `Il vous faut ${r.points - MOCK_USER.points} pts de plus.`)
+                      ? Alert.alert('Recompense activee', `${reward.title} est disponible. Montrez ce message en caisse.`)
+                      : Alert.alert('Pas encore', `Il vous faut ${reward.points - MOCK_USER.points} pts de plus.`)
                   }
                 >
                   <Ionicons
-                    name={unlocked ? r.icon : 'lock-closed'}
+                    name={unlocked ? reward.icon : 'lock-closed'}
                     size={28}
                     color={unlocked ? Colors.primary : Colors.border}
                   />
-                  <Text style={[styles.rewardTitle, !unlocked && styles.rewardTitleLocked]}>{r.title}</Text>
+                  <Text style={[styles.rewardTitle, !unlocked && styles.rewardTitleLocked]}>{reward.title}</Text>
+                  <Text style={[styles.rewardDescription, !unlocked && styles.rewardTitleLocked]}>{reward.description}</Text>
                   <Text style={[styles.rewardPoints, !unlocked && styles.rewardPointsLocked]}>
-                    {r.points} pts
+                    {reward.points} pts
                   </Text>
                 </TouchableOpacity>
               );
             })}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Referents SOCIOS</Text>
+          <View style={styles.referentsCard}>
+            {SOCIOS_REFERENTS.map((entry) => (
+              <View key={entry.city} style={styles.referentRow}>
+                <Text style={styles.referentCity}>{entry.city}</Text>
+                <Text style={styles.referentName}>{entry.referents}</Text>
+              </View>
+            ))}
           </View>
         </View>
 
@@ -174,6 +253,8 @@ const styles = StyleSheet.create({
   memberName: { color: Colors.primary, fontSize: 17, fontWeight: '900', textTransform: 'uppercase' },
   memberLevel: { color: Colors.secondary, fontSize: 13, fontWeight: '800', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.6 },
   memberSince: { color: Colors.textSecondary, fontSize: 11, marginTop: 2 },
+  ruleText: { color: Colors.primary, fontSize: 13, fontWeight: '900', textTransform: 'uppercase', marginBottom: 4 },
+  ruleSubtext: { color: Colors.textSecondary, fontSize: 12, lineHeight: 18, marginBottom: 14 },
   bLogo: {
     width: 44,
     height: 44,
@@ -183,11 +264,35 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bLogoText: { color: Colors.white, fontWeight: '900', fontSize: 18 },
+  phoneRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, marginBottom: 10 },
+  phoneLabel: { color: Colors.textSecondary, fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
+  phoneInput: {
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    backgroundColor: Colors.paper,
+    color: Colors.text,
+    fontSize: 15,
+    fontWeight: '700',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  joinButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  joinButtonText: { color: Colors.white, fontWeight: '900', fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase' },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  statusText: { color: Colors.textSecondary, fontSize: 12, fontWeight: '700' },
   pointsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 10 },
   pointsLabel: { color: Colors.textSecondary, fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.1 },
   pointsValue: { color: Colors.primary, fontSize: 28, fontWeight: '900' },
   nextLevel: {},
   nextLevelText: { color: Colors.textSecondary, fontSize: 12, fontWeight: '700' },
+  eurosValue: { color: Colors.secondary, fontSize: 12, fontWeight: '800', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.3 },
   progressBar: {
     height: 8,
     backgroundColor: Colors.lightGray,
@@ -201,6 +306,26 @@ const styles = StyleSheet.create({
   },
   section: { marginBottom: 24 },
   sectionTitle: { fontSize: 22, fontWeight: '900', color: Colors.primary, marginBottom: 14, letterSpacing: 0.8, textTransform: 'uppercase' },
+  stepsCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: 14,
+    gap: 12,
+  },
+  stepRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  stepIndexCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+  },
+  stepIndexText: { color: Colors.white, fontWeight: '900', fontSize: 12 },
+  stepText: { flex: 1, color: Colors.text, fontSize: 13, lineHeight: 19, fontWeight: '700' },
+  trainingText: { marginTop: 10, color: Colors.textSecondary, fontSize: 12, lineHeight: 18 },
   rewardsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   rewardCard: {
     width: '47%',
@@ -214,9 +339,28 @@ const styles = StyleSheet.create({
   },
   rewardCardLocked: { opacity: 0.45 },
   rewardTitle: { fontSize: 12, fontWeight: '900', color: Colors.primary, textAlign: 'center', textTransform: 'uppercase' },
+  rewardDescription: { fontSize: 11, lineHeight: 16, color: Colors.textSecondary, textAlign: 'center' },
   rewardTitleLocked: { color: Colors.textSecondary },
   rewardPoints: { fontSize: 11, fontWeight: '900', color: Colors.secondary },
   rewardPointsLocked: { color: Colors.textSecondary },
+  referentsCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    overflow: 'hidden',
+  },
+  referentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  referentCity: { color: Colors.primary, fontSize: 13, fontWeight: '900', textTransform: 'uppercase' },
+  referentName: { color: Colors.textSecondary, fontSize: 13, fontWeight: '700' },
   halleRow: {
     flexDirection: 'row',
     alignItems: 'center',

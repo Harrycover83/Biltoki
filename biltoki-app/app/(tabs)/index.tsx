@@ -48,6 +48,7 @@ export default function HomeScreen() {
               >
                 <Text style={styles.heroChipText}>{item}</Text>
               </View>
+                  { icon: 'flame-outline', label: 'SOCIOS!', route: '/profil' as const, tone: 'orange' },
             ))}
           </View>
 
@@ -218,11 +219,11 @@ const styles = StyleSheet.create({
   sectionLink: { fontSize: 12, color: Colors.primary, fontWeight: '900', letterSpacing: 1.6, textTransform: 'uppercase' },
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   quickCard: {
-    width: '48%',
+    width: '31.5%',
     backgroundColor: Colors.card,
     borderRadius: 20,
     paddingVertical: 18,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: Colors.border,
   },
@@ -239,7 +240,7 @@ const styles = StyleSheet.create({
   quickIconOrange: { backgroundColor: '#F9DAB6' },
   quickIconGreen: { backgroundColor: '#D8E9DF' },
   quickIconBlue: { backgroundColor: '#D9E8F1' },
-  quickLabel: { fontSize: 14, fontWeight: '900', color: Colors.primary, textTransform: 'uppercase', letterSpacing: 0.6 },
+  quickLabel: { fontSize: 12, fontWeight: '900', color: Colors.primary, textTransform: 'uppercase', letterSpacing: 0.6 },
   eventCard: {
     flexDirection: 'row',
     alignItems: 'center',
