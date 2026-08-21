@@ -48,7 +48,6 @@ export default function HomeScreen() {
               >
                 <Text style={styles.heroChipText}>{item}</Text>
               </View>
-                  { icon: 'flame-outline', label: 'SOCIOS!', route: '/profil' as const, tone: 'orange' },
             ))}
           </View>
 
@@ -70,6 +69,7 @@ export default function HomeScreen() {
               { icon: 'storefront-outline', label: 'Nos Halles', route: '/halles' as const, tone: 'rose' },
               { icon: 'calendar-outline', label: 'Événements', route: '/evenements' as const, tone: 'orange' },
               { icon: 'newspaper-outline', label: 'Actualités', route: '/actualites' as const, tone: 'green' },
+              { icon: 'flame-outline', label: 'SOCIOS!', route: '/profil' as const, tone: 'orange' },
               { icon: 'person-outline', label: 'Mon B!', route: '/profil' as const, tone: 'blue' },
             ].map((item) => (
               <TouchableOpacity key={item.label} style={styles.quickCard} onPress={() => router.push(item.route)}>
