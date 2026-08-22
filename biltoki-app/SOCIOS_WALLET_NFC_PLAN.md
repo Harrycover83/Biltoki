@@ -35,6 +35,34 @@ After OTP verification, the backend should issue a device-bound session:
 
 This gives the user a persistent login on one phone without enabling casual account sharing across multiple phones.
 
+## Railway backend environment variables
+If the SOCIOS backend is deployed on Railway, keep the secrets there only.
+
+Suggested variables for the backend service:
+- `NODE_ENV=production`
+- `PORT=3000`
+- `DATABASE_URL=...`
+- `JWT_ACCESS_SECRET=...`
+- `JWT_REFRESH_SECRET=...`
+- `SESSION_SIGNING_SECRET=...`
+- `PASS_TOKEN_SECRET=...`
+- `OTP_PROVIDER=...`
+- `OTP_API_KEY=...`
+- `OTP_SENDER_ID=...`
+- `CORS_ORIGIN=...`
+- `REDIS_URL=...` if you use rate limiting / OTP / session cache
+
+Suggested runtime values:
+- Access token TTL: 15 min
+- Refresh token TTL: 30 days
+- OTP TTL: 5 min
+- Pass token TTL: 60-90 sec
+- One active session per account by default
+
+Expo app variables remain separate in the mobile project:
+- `EXPO_PUBLIC_SOCIOS_USE_MOCK=false`
+- `EXPO_PUBLIC_SOCIOS_API_BASE_URL=https://...`
+
 ## Phase 1 - MVP Pass (QR first)
 ### Scope
 - Add a real unique customer loyalty id (UUID format)

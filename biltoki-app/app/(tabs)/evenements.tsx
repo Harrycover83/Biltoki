@@ -5,7 +5,8 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
-import { EVENEMENTS, Evenement } from '../../data/evenements';
+import { Evenement } from '../../data/evenements';
+import { eventsService } from '../../services/eventsService';
 
 const CATEGORIES = ['Tous', 'concert', 'tapas', 'banquet', 'atelier', 'marché'];
 
@@ -28,11 +29,12 @@ const CATEGORY_COLORS: Record<string, string> = {
 export default function EvenementsScreen() {
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('Tous');
+  const events = eventsService.getAll();
 
   const filtered =
     activeCategory === 'Tous'
-      ? EVENEMENTS
-      : EVENEMENTS.filter((e) => e.category === activeCategory);
+      ? events
+      : events.filter((event) => event.category === activeCategory);
 
   const renderEvent = ({ item }: { item: Evenement }) => {
     const color = CATEGORY_COLORS[item.category] ?? Colors.primary;

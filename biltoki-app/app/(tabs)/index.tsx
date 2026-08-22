@@ -6,8 +6,8 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
-import { EVENEMENTS } from '../../data/evenements';
 import { HALLES } from '../../data/halles';
+import { eventsService } from '../../services/eventsService';
 
 const CATEGORY_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   concert: 'musical-notes',
@@ -22,7 +22,7 @@ const COMMUNITY_IMAGE = 'https://cdn.prod.website-files.com/69032f7aa92da3854968
 
 export default function HomeScreen() {
   const router = useRouter();
-  const upcomingEvents = EVENEMENTS.slice(0, 3);
+  const upcomingEvents = eventsService.getAll().slice(0, 3);
   const featuredHalles = HALLES.slice(0, 3);
 
   return (

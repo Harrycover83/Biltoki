@@ -6,7 +6,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
-import { EVENEMENTS } from '../../data/evenements';
+import { eventsService } from '../../services/eventsService';
 
 const CATEGORY_COLORS: Record<string, string> = {
   concert: Colors.blue,
@@ -27,7 +27,7 @@ const CATEGORY_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
 export default function EvenementDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const event = EVENEMENTS.find((e) => e.id === id);
+  const event = eventsService.getById(id);
   const [inscrit, setInscrit] = useState(false);
 
   if (!event) {

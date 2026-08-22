@@ -7,13 +7,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { HALLES } from '../../data/halles';
-import { EVENEMENTS } from '../../data/evenements';
+import { eventsService } from '../../services/eventsService';
 
 export default function HalleDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const halle = HALLES.find((h) => h.id === id);
-  const halleEvents = EVENEMENTS.filter((e) => e.halleId === id);
+  const halleEvents = eventsService.getByHalleId(id);
 
   if (!halle) {
     return (
